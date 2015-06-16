@@ -3,8 +3,8 @@ ruby '2.2.1'
 # Uncomment the database that you have configured in config/database.yml
 # ----------------------------------------------------------------------
 # gem 'mysql2'
-gem 'sqlite3'
-# gem 'pg'
+# gem 'sqlite3'
+gem 'pg'
 
 # Removes a gem dependency
 def remove(name)
