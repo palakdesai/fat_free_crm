@@ -436,7 +436,7 @@ en-US:
   convert_lead_text: By converting the lead %{value} will become a contact associated
     with the existing or newly created account. Lead status will be automatically
     set to converted.
-  create_lead: Create Lead
+  create_lead: Create new Lead
   create_opp_for_contact: You can optionally create an opportunity for the %{value}
     contact by specifying the name, current stage, estimated closing date, sale probability,
     amount of the deal, and the discount offered.
