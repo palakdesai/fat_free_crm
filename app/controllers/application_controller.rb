@@ -4,8 +4,7 @@
 # See MIT-LICENSE file or http://www.opensource.org/licenses/mit-license.php
 #------------------------------------------------------------------------------
 class ApplicationController < ActionController::Base
-  protect_from_forgery
-
+	protect_from_forgery unless: -> { request.format.json? }
   before_action :set_context
   before_action :clear_setting_cache
   before_action "hook(:app_before_filter, self)"
