@@ -1,5 +1,5 @@
 source 'https://rubygems.org'
-ruby '2.0.0'
+ruby '2.2.7'
 # Uncomment the database that you have configured in config/database.yml
 # ----------------------------------------------------------------------
 # gem 'mysql2'
