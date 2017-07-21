@@ -12,7 +12,7 @@ Rails.application.routes.draw do
   get 'admin'      => 'admin/users#index',       :as => :admin
   get 'login'      => 'authentications#new',     :as => :login
   delete 'logout'  => 'authentications#destroy', :as => :logout
-  get 'profile'    => 'users#show',              :as => :profile
+  #get 'profile'    => 'users#show',              :as => :profile
   get 'signup'     => 'users#new',               :as => :signup
 
   get '/home/options',  as: :options
