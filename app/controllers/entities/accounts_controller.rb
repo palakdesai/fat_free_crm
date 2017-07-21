@@ -30,14 +30,14 @@ class AccountsController < EntitiesController
   # GET /accounts/new
   #----------------------------------------------------------------------------
   def new
-    @account.attributes = { user: current_user, access: Setting.default_access, assigned_to: nil }
-
-    if params[:related]
-      model, id = params[:related].split('_')
-      instance_variable_set("@#{model}", model.classify.constantize.find(id))
-    end
-
-    respond_with(@account)
+    # @account.attributes = { user: current_user, access: Setting.default_access, assigned_to: nil }
+		#
+    # if params[:related]
+    #   model, id = params[:related].split('_')
+    #   instance_variable_set("@#{model}", model.classify.constantize.find(id))
+    # end
+		#
+    # respond_with(@account)
   end
 
   # GET /accounts/1/edit                                                   AJAX
