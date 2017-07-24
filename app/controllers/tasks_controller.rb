@@ -10,16 +10,16 @@ class TasksController < ApplicationController
 
   # GET /tasks
   #----------------------------------------------------------------------------
-  # def index
-  #   @view = view
-  #   @tasks = Task.find_all_grouped(current_user, @view)
-	#
-  #   respond_with @tasks do |format|
-  #     format.xls { render layout: 'header' }
-  #     format.csv { render csv: @tasks.map(&:second).flatten }
-  #     format.xml { render xml: @tasks, except: [:subscribed_users] }
-  #   end
-  # end
+  def ind
+    @view = view
+    @tasks = Task.find_all_grouped(current_user, @view)
+
+    respond_with @tasks do |format|
+      format.xls { render layout: 'header' }
+      format.csv { render csv: @tasks.map(&:second).flatten }
+      format.xml { render xml: @tasks, except: [:subscribed_users] }
+    end
+  end
 
   # GET /tasks/1
   #----------------------------------------------------------------------------
