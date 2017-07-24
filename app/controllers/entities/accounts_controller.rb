@@ -37,7 +37,7 @@ class AccountsController < EntitiesController
       instance_variable_set("@#{model}", model.classify.constantize.find(id))
     end
 
-    respond_with(@account)
+    respond_with(@accountant)
   end
 
   # GET /accounts/1/edit                                                   AJAX
