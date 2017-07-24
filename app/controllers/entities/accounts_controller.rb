@@ -29,7 +29,7 @@ class AccountsController < EntitiesController
 
   # GET /accounts/new
   #----------------------------------------------------------------------------
-  def newer
+  def new
     @account.attributes = { user: current_user, access: Setting.default_access, assigned_to: nil }
 
     if params[:related]
