@@ -10,7 +10,7 @@ class TasksController < ApplicationController
 
   # GET /tasks
   #----------------------------------------------------------------------------
-  def index
+  def ind
     @view = view
     @tasks = Task.find_all_grouped(current_user, @view)
 
