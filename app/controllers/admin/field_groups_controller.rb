@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -78,6 +80,13 @@ class Admin::FieldGroupsController < Admin::ApplicationController
   protected
 
   def field_group_params
-    params[:field_group].permit!
+    params.require(:field_group).permit(
+      :name,
+      :label,
+      :position,
+      :hint,
+      :tag_id,
+      :klass_name
+    )
   end
 end

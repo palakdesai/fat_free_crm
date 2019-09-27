@@ -1,12 +1,13 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
 # See MIT-LICENSE file or http://www.opensource.org/licenses/mit-license.php
 #------------------------------------------------------------------------------
 class EntitiesController < ApplicationController
-  before_action :require_user
-  before_action :set_current_tab, only: [:index, :show]
-  before_action :set_view, only: [:index, :show, :redraw]
+  before_action :set_current_tab, only: %i[index show]
+  before_action :set_view, only: %i[index show redraw]
 
   before_action :set_options, only: :index
   before_action :load_ransack_search, only: :index
@@ -20,7 +21,7 @@ class EntitiesController < ApplicationController
   # Common attach handler for all core controllers.
   #----------------------------------------------------------------------------
   def attach
-    @attachment = params[:assets].classify.constantize.find(params[:asset_id])
+    @attachment = find_class(params[:assets]).find(params[:asset_id])
     @attached = entity.attach!(@attachment)
     entity.reload
 
@@ -30,7 +31,7 @@ class EntitiesController < ApplicationController
   # Common discard handler for all core controllers.
   #----------------------------------------------------------------------------
   def discard
-    @attachment = params[:attachment].constantize.find(params[:attachment_id])
+    @attachment = find_class(params[:attachment]).find(params[:attachment_id])
     entity.discard!(@attachment)
     entity.reload
 
@@ -87,7 +88,7 @@ class EntitiesController < ApplicationController
         render('fields/group') && return
       end
     end
-    render text: ''
+    render plain: ''
   end
 
   protected
@@ -109,7 +110,7 @@ class EntitiesController < ApplicationController
 
   #----------------------------------------------------------------------------
   def entities
-    instance_variable_get("@#{controller_name}") || klass.my
+    instance_variable_get("@#{controller_name}") || klass.my(current_user)
   end
 
   def set_options
@@ -121,7 +122,7 @@ class EntitiesController < ApplicationController
   end
 
   def resource_params
-    params[controller_name.singularize].permit!
+    params[controller_name.singularize].permit! if params[controller_name.singularize].present?
   end
 
   private
@@ -150,16 +151,16 @@ class EntitiesController < ApplicationController
       scope = scope.state(filter) if filter.present?
     end
 
-    scope = scope.text_search(query)              if query.present?
+    scope = scope.text_search(query) if query.present?
     scope = scope.tagged_with(tags, on: :tags) if tags.present?
 
     # Ignore this order when doing advanced search
     unless advanced_search
       order = current_user.pref[:"#{controller_name}_sort_by"] || klass.sort_by
-      scope = scope.order(order)
+      scope = order_by_attributes(scope, order)
     end
 
-    @search_results_count = scope.count
+    @search_results_count = scope.size
 
     # Pagination is disabled for xls and csv requests
     unless wants.xls? || wants.csv?
@@ -171,7 +172,14 @@ class EntitiesController < ApplicationController
       scope = scope.paginate(page: current_page, per_page: per_page)
     end
 
+    scope = scope.includes(*list_includes) if respond_to?(:list_includes, true)
+
     scope
+  end
+
+  #----------------------------------------------------------------------------
+  def order_by_attributes(scope, order)
+    scope.order(order)
   end
 
   #----------------------------------------------------------------------------
@@ -186,7 +194,8 @@ class EntitiesController < ApplicationController
   #----------------------------------------------------------------------------
   def parse_query_and_tags(search_string)
     return ['', ''] if search_string.blank?
-    query, tags = [], []
+    query = []
+    tags = []
     search_string.strip.split(/\s+/).each do |token|
       if token.starts_with?("#")
         tags << token[1..-1]
@@ -207,8 +216,18 @@ class EntitiesController < ApplicationController
   def set_view
     if params['view']
       controller = params['controller']
-      action = (params['action'] == 'show') ? 'show' : 'index' # create update redraw filter index actions all use index view
+      action = params['action'] == 'show' ? 'show' : 'index' # create update redraw filter index actions all use index view
       current_user.pref[:"#{controller}_#{action}_view"] = params['view']
     end
+  end
+
+  def per_page_param
+    per_page = params[:per_page]&.to_i
+    [1, [per_page, 200].min].max if per_page
+  end
+
+  def page_param
+    page = params[:page]&.to_i
+    [0, page].max if page
   end
 end

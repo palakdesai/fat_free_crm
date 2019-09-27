@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -10,7 +12,7 @@ class LeadsController < EntitiesController
   # GET /leads
   #----------------------------------------------------------------------------
   def index
-    @leads = get_leads(page: params[:page])
+    @leads = get_leads(page: page_param)
 
     respond_with @leads do |format|
       format.xls { render layout: 'header' }
@@ -35,7 +37,7 @@ class LeadsController < EntitiesController
 
     if params[:related]
       model, id = params[:related].split('_')
-      if related = model.classify.constantize.my.find_by_id(id)
+      if related = model.classify.constantize.my(current_user).find_by_id(id)
         instance_variable_set("@#{model}", related)
       else
         respond_to_related_not_found(model) && return
@@ -51,7 +53,7 @@ class LeadsController < EntitiesController
     get_campaigns
 
     if params[:previous].to_s =~ /(\d+)\z/
-      @previous = Lead.my.find_by_id(Regexp.last_match[1]) || Regexp.last_match[1].to_i
+      @previous = Lead.my(current_user).find_by_id(Regexp.last_match[1]) || Regexp.last_match[1].to_i
     end
 
     respond_with(@lead)
@@ -85,7 +87,7 @@ class LeadsController < EntitiesController
       if @lead.update_with_lead_counters(resource_params)
         update_sidebar
       else
-        @campaigns = Campaign.my.order('name')
+        @campaigns = Campaign.my(current_user).order('name')
       end
     end
   end
@@ -105,11 +107,11 @@ class LeadsController < EntitiesController
   #----------------------------------------------------------------------------
   def convert
     @account = Account.new(user: current_user, name: @lead.company, access: "Lead")
-    @accounts = Account.my.order('name')
+    @accounts = Account.my(current_user).order('name')
     @opportunity = Opportunity.new(user: current_user, access: "Lead", stage: "prospecting", campaign: @lead.campaign, source: @lead.source)
 
     if params[:previous].to_s =~ /(\d+)\z/
-      @previous = Lead.my.find_by_id(Regexp.last_match[1]) || Regexp.last_match[1].to_i
+      @previous = Lead.my(current_user).find_by_id(Regexp.last_match[1]) || Regexp.last_match[1].to_i
     end
 
     respond_with(@lead)
@@ -119,7 +121,7 @@ class LeadsController < EntitiesController
   #----------------------------------------------------------------------------
   def promote
     @account, @opportunity, @contact = @lead.promote(params.permit!)
-    @accounts = Account.my.order('name')
+    @accounts = Account.my(current_user).order('name')
     @stage = Setting.unroll(:opportunity_stage)
 
     respond_with(@lead) do |format|
@@ -159,7 +161,7 @@ class LeadsController < EntitiesController
   # GET /leads/redraw                                                      AJAX
   #----------------------------------------------------------------------------
   def redraw
-    current_user.pref[:leads_per_page] = params[:per_page] if params[:per_page]
+    current_user.pref[:leads_per_page] = per_page_param if per_page_param
 
     # Sorting and naming only: set the same option for Contacts if the hasn't been set yet.
     if params[:sort_by]
@@ -173,7 +175,7 @@ class LeadsController < EntitiesController
       current_user.pref[:contacts_naming] ||= params[:naming]
     end
 
-    @leads = get_leads(page: 1, per_page: params[:per_page]) # Start one the first page.
+    @leads = get_leads(page: 1, per_page: per_page_param) # Start one the first page.
     set_options # Refresh options
 
     respond_with(@leads) do |format|
@@ -185,7 +187,7 @@ class LeadsController < EntitiesController
   #----------------------------------------------------------------------------
   def filter
     session[:leads_filter] = params[:status]
-    @leads = get_leads(page: 1, per_page: params[:per_page]) # Start one the first page.
+    @leads = get_leads(page: 1, per_page: per_page_param) # Start one the first page.
 
     respond_with(@leads) do |format|
       format.js { render :index }
@@ -195,11 +197,16 @@ class LeadsController < EntitiesController
   private
 
   #----------------------------------------------------------------------------
-  alias_method :get_leads, :get_list_of_records
+  alias get_leads get_list_of_records
+
+  #----------------------------------------------------------------------------
+  def list_includes
+    %i[tags].freeze
+  end
 
   #----------------------------------------------------------------------------
   def get_campaigns
-    @campaigns = Campaign.my.order('name')
+    @campaigns = Campaign.my(current_user).order('name')
   end
 
   def set_options
@@ -210,17 +217,21 @@ class LeadsController < EntitiesController
   #----------------------------------------------------------------------------
   def respond_to_destroy(method)
     if method == :ajax
-      if called_from_index_page?                  # Called from Leads index.
-        get_data_for_sidebar                      # Get data for the sidebar.
-        @leads = get_leads                        # Get leads for current page.
-        if @leads.blank?                          # If no lead on this page then try the previous one.
+      if called_from_index_page? # Called from Leads index.
+        get_data_for_sidebar
+        @leads = get_leads
+        if @leads.blank?
+          # If no lead on this page then try the previous one.
+          # and reload the whole list even if it's empty.
           @leads = get_leads(page: current_page - 1) if current_page > 1
-          render(:index) && return                # And reload the whole list even if it's empty.
+          render(:index) && return
         end
-      else                                        # Called from related asset.
-        self.current_page = 1                     # Reset current page to 1 to make sure it stays valid.
-        @campaign = @lead.campaign                # Reload lead's campaign if any.
-      end                                         # Render destroy.js
+      else # Called from related asset.
+        # Reset current page to 1 to make sure it stays valid.
+        # Reload lead's campaign if any and render destroy.js
+        self.current_page = 1
+        @campaign = @lead.campaign
+      end
     else # :html destroy
       self.current_page = 1
       flash[:notice] = t(:msg_asset_deleted, @lead.full_name)
@@ -234,13 +245,20 @@ class LeadsController < EntitiesController
       instance_variable_set("@#{related}", @lead.send(related)) if called_from_landing_page?(related.to_s.pluralize)
     else
       @lead_status_total = HashWithIndifferentAccess[
-                           all: Lead.my.count,
+                           all: Lead.my(current_user).count,
                            other: 0
       ]
+
       Setting.lead_status.each do |key|
-        @lead_status_total[key] = Lead.my.where(status: key.to_s).count
-        @lead_status_total[:other] -= @lead_status_total[key]
+        @lead_status_total[key] = 0
       end
+
+      status_counts = Lead.my(current_user).where(status: Setting.lead_status).group(:status).count
+      status_counts.each do |key, total|
+        @lead_status_total[key.to_sym] = total
+        @lead_status_total[:other] -= total
+      end
+
       @lead_status_total[:other] += @lead_status_total[:all]
     end
   end

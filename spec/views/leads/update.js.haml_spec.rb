@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -7,10 +9,10 @@ require 'spec_helper'
 
 describe "/leads/update" do
   before do
-    login_and_assign
-    assign(:lead, @lead = FactoryGirl.create(:lead, user: current_user, assignee: FactoryGirl.create(:user)))
+    login
+    assign(:lead, @lead = build_stubbed(:lead, user: current_user, assignee: build_stubbed(:user)))
     assign(:users, [current_user])
-    assign(:campaigns, [FactoryGirl.create(:campaign)])
+    assign(:campaigns, [build_stubbed(:campaign)])
     assign(:lead_status_total, Hash.new(1))
   end
 
@@ -56,7 +58,7 @@ describe "/leads/update" do
 
     describe "on related asset page -" do
       before do
-        assign(:campaign, FactoryGirl.create(:campaign))
+        assign(:campaign, build_stubbed(:campaign))
         controller.request.env["HTTP_REFERER"] = "http://localhost/campaigns/123"
       end
 
@@ -67,7 +69,7 @@ describe "/leads/update" do
       end
 
       it "should update campaign sidebar" do
-        assign(:campaign, campaign = FactoryGirl.create(:campaign))
+        assign(:campaign, build_stubbed(:campaign))
         render
 
         expect(rendered).to include("sidebar")
@@ -75,7 +77,7 @@ describe "/leads/update" do
         expect(rendered).to have_text("Recent Items")
       end
     end
-  end # no errors
+  end
 
   describe "validation errors :" do
     before do
@@ -120,5 +122,5 @@ describe "/leads/update" do
         expect(rendered).to include('focus()')
       end
     end
-  end # errors
+  end
 end

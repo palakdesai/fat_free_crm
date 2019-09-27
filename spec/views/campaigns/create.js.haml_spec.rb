@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -7,12 +9,12 @@ require 'spec_helper'
 
 describe "/campaigns/create" do
   before do
-    login_and_assign
+    login
   end
 
   describe "create success" do
     before do
-      assign(:campaign, @campaign = FactoryGirl.create(:campaign))
+      assign(:campaign, @campaign = build_stubbed(:campaign))
       assign(:campaigns, [@campaign].paginate)
       assign(:campaign_status_total, Hash.new(1))
       render
@@ -36,8 +38,8 @@ describe "/campaigns/create" do
 
   describe "create failure" do
     it "should re-render [create] template in :create_campaign div" do
-      assign(:campaign, FactoryGirl.build(:campaign, name: nil)) # make it invalid
-      assign(:users, [FactoryGirl.create(:user)])
+      assign(:campaign, build(:campaign, name: nil)) # make it invalid
+      assign(:users, [build_stubbed(:user)])
 
       render
 

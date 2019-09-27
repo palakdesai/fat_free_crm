@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -11,11 +13,11 @@ describe EntityObserver do
     allow(PaperTrail).to receive(:whodunnit).and_return(assigner)
   end
 
-  [:account, :contact, :lead, :opportunity].each do |entity_type|
+  %i[account contact lead opportunity].each do |entity_type|
     describe "on creation of #{entity_type}" do
-      let(:assignee) { FactoryGirl.create(:user) }
-      let(:assigner) { FactoryGirl.create(:user) }
-      let!(:entity)  { FactoryGirl.build(entity_type, user: assigner, assignee: assignee) }
+      let(:assignee) { create(:user) }
+      let(:assigner) { create(:user) }
+      let!(:entity)  { build(entity_type, user: assigner, assignee: assignee) }
       let(:mail) { double('mail', deliver_now: true) }
 
       after :each do
@@ -43,9 +45,9 @@ describe EntityObserver do
     end
 
     describe "on update of #{entity_type}" do
-      let(:assignee) { FactoryGirl.create(:user) }
-      let(:assigner) { FactoryGirl.create(:user) }
-      let!(:entity)  { FactoryGirl.create(entity_type, user: FactoryGirl.create(:user)) }
+      let(:assignee) { create(:user) }
+      let(:assigner) { create(:user) }
+      let!(:entity)  { create(entity_type, user: create(:user)) }
       let(:mail) { double('mail', deliver_now: true) }
 
       it "notifies the new owner if the entity is re-assigned" do

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -9,12 +11,12 @@ describe "/users/upload_avatar" do
   include UsersHelper
 
   before do
-    login_and_assign
+    login
   end
 
   describe "no errors:" do
     before do
-      @avatar = FactoryGirl.create(:avatar, entity: current_user)
+      @avatar = build_stubbed(:avatar, entity: current_user)
       allow(current_user).to receive(:avatar).and_return(@avatar)
       assign(:user, @user = current_user)
     end
@@ -25,13 +27,13 @@ describe "/users/upload_avatar" do
       expect(rendered).to include("crm.flip_form('upload_avatar'")
       expect(rendered).to include("crm.set_title('upload_avatar', 'My Profile')")
     end
-  end # no errors
+  end
 
   describe "validation errors:" do
     before do
-      @avatar = FactoryGirl.create(:avatar, entity: current_user)
+      @avatar = build_stubbed(:avatar, entity: current_user)
       @avatar.errors.add(:image, "error")
-      allow(current_user).to receive(:avatar).and_return(@avatar)
+      allow_any_instance_of(User).to receive(:avatar).and_return(@avatar)
       assign(:user, @user = current_user)
     end
 
@@ -40,5 +42,5 @@ describe "/users/upload_avatar" do
       expect(rendered).to include("$('#upload_avatar').html")
       expect(rendered).to include(%/$('#upload_avatar').effect("shake"/)
     end
-  end # errors
+  end
 end

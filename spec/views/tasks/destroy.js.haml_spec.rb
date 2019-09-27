@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -9,13 +11,13 @@ describe "/tasks/destroy" do
   include TasksHelper
 
   before do
-    login_and_assign
+    login
   end
 
   TASK_STATUSES.each do |status|
     describe "destroy from Tasks tab (#{status} view)" do
       before do
-        @task = FactoryGirl.create(:task)
+        @task = build_stubbed(:task)
         assign(:task, @task)
         assign(:view, status)
         assign(:empty_bucket, :due_asap)
@@ -44,7 +46,7 @@ describe "/tasks/destroy" do
 
   describe "destroy from related asset" do
     it "should blind up out destroyed task partial" do
-      @task = FactoryGirl.create(:task)
+      @task = build_stubbed(:task)
       assign(:task, @task)
       controller.request.env["HTTP_REFERER"] = "http://localhost/leads/123"
 

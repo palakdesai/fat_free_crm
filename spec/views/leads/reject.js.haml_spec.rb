@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -7,8 +9,8 @@ require 'spec_helper'
 
 describe "/leads/reject" do
   before do
-    login_and_assign
-    assign(:lead, @lead = FactoryGirl.create(:lead, status: "new"))
+    login
+    assign(:lead, @lead = build_stubbed(:lead, status: "new"))
     assign(:lead_status_total, Hash.new(1))
   end
 
@@ -35,7 +37,7 @@ describe "/leads/reject" do
   end
 
   it "should update campaign sidebar if called from campaign landing page" do
-    assign(:campaign, campaign = FactoryGirl.create(:campaign))
+    assign(:campaign, campaign = build_stubbed(:campaign))
     controller.request.env["HTTP_REFERER"] = "http://localhost/campaigns/#{campaign.id}"
     render
 

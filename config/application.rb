@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -12,6 +14,7 @@ require "active_record/railtie"
 require "action_controller/railtie"
 require "action_mailer/railtie"
 require "sprockets/railtie"
+require 'ransack'
 
 # require "rails/test_unit/railtie"
 #
@@ -66,9 +69,7 @@ module FatFreeCRM
     config.encoding = "utf-8"
 
     # Configure sensitive parameters which will be filtered from the log file.
-    config.filter_parameters += [:password, :password_hash, :password_salt, :password_confirmation]
-
-    config.active_record.raise_in_transactional_callbacks = true
+    config.filter_parameters += %i[password encrypted_password password_salt password_confirmation]
   end
 end
 

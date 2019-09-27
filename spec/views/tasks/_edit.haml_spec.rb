@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -9,11 +11,11 @@ describe "/tasks/_edit" do
   include TasksHelper
 
   before do
-    login_and_assign
-    assign(:task, FactoryGirl.create(:task, asset: FactoryGirl.create(:account), bucket: "due_asap"))
+    login
+    assign(:task, build_stubbed(:task, asset: build_stubbed(:account), bucket: "due_asap"))
     assign(:users, [current_user])
-    assign(:bucket, %w(due_asap due_today))
-    assign(:category, %w(meeting money))
+    assign(:bucket, %w[due_asap due_today])
+    assign(:category, %w[meeting money])
   end
 
   it "should render [edit task] form" do

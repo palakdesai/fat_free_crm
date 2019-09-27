@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -6,10 +8,10 @@
 require 'spec_helper'
 
 describe CommentsController do
-  COMMENTABLE = [:account, :campaign, :contact, :lead, :opportunity].freeze
+  COMMENTABLE = %i[account campaign contact lead opportunity].freeze
 
   before(:each) do
-    require_user
+    login
   end
 
   # GET /comments
@@ -19,59 +21,59 @@ describe CommentsController do
     COMMENTABLE.each do |asset|
       describe "(HTML)" do
         before(:each) do
-          @asset = FactoryGirl.create(asset)
+          @asset = create(asset)
         end
 
         it "should redirect to the asset landing page if the asset is found" do
-          get :index, :"#{asset}_id" => @asset.id
+          get :index, params: { :"#{asset}_id" => @asset.id }
           expect(response).to redirect_to(controller: asset.to_s.pluralize, action: :show, id: @asset.id)
         end
 
         it "should redirect to root url with warning if the asset is not found" do
-          get :index, :"#{asset}_id" => @asset.id + 42
+          get :index, params: { :"#{asset}_id" => @asset.id + 42 }
           expect(flash[:warning]).not_to eq(nil)
           expect(response).to redirect_to(root_path)
         end
-      end # HTML
+      end
 
       describe "(JSON)" do
         before(:each) do
-          @asset = FactoryGirl.create(asset)
-          @asset.comments = [FactoryGirl.create(:comment, commentable: @asset)]
+          @asset = create(asset)
+          @asset.comments = [create(:comment, commentable: @asset)]
           request.env["HTTP_ACCEPT"] = "application/json"
         end
 
         it "should render all comments as JSON if the asset is found found" do
-          get :index, :"#{asset}_id" => @asset.id
+          get :index, params: { :"#{asset}_id" => @asset.id }
           expect(response.body).to eq(assigns[:comments].to_json)
         end
 
         it "JSON: should return 404 (Not Found) JSON error if the asset is not found" do
-          get :index, :"#{asset}_id" => @asset.id + 42
+          get :index, params: { :"#{asset}_id" => @asset.id + 42 }
           expect(flash[:warning]).not_to eq(nil)
           expect(response.code).to eq("404")
         end
-      end # JSON
+      end
 
       describe "(XML)" do
         before(:each) do
-          @asset = FactoryGirl.create(asset)
-          @asset.comments = [FactoryGirl.create(:comment, commentable: @asset)]
+          @asset = create(asset)
+          @asset.comments = [create(:comment, commentable: @asset)]
           request.env["HTTP_ACCEPT"] = "application/xml"
         end
 
         it "should render all comments as XML if the asset is found found" do
-          get :index, :"#{asset}_id" => @asset.id
+          get :index, params: { :"#{asset}_id" => @asset.id }
           expect(response.body).to eq(assigns[:comments].to_xml)
         end
 
         it "XML: should return 404 (Not Found) XML error if the asset is not found" do
-          get :index, :"#{asset}_id" => @asset.id + 42
+          get :index, params: { :"#{asset}_id" => @asset.id + 42 }
           expect(flash[:warning]).not_to eq(nil)
           expect(response.code).to eq("404")
         end
-      end # XML
-    end # COMMENTABLE.each
+      end
+    end
   end
 
   # GET /comments/1/edit                                                   AJAX
@@ -79,11 +81,11 @@ describe CommentsController do
   describe "responding to GET edit" do
     COMMENTABLE.each do |asset|
       it "should expose the requested comment as @commment and render [edit] template" do
-        @asset = FactoryGirl.create(asset)
-        @comment = FactoryGirl.create(:comment, id: 42, commentable: @asset, user: current_user)
+        @asset = create(asset)
+        @comment = create(:comment, id: 42, commentable: @asset, user: current_user)
         allow(Comment).to receive(:new).and_return(@comment)
 
-        xhr :get, :edit, id: 42
+        get :edit, params: { id: 42 }, xhr: true
         expect(assigns[:comment]).to eq(@comment)
         expect(response).to render_template("comments/edit")
       end
@@ -97,11 +99,11 @@ describe CommentsController do
     describe "with valid params" do
       COMMENTABLE.each do |asset|
         it "should expose a newly created comment as @comment for the #{asset}" do
-          @asset = FactoryGirl.create(asset)
-          @comment = FactoryGirl.build(:comment, commentable: @asset, user: current_user)
+          @asset = create(asset)
+          @comment = build(:comment, commentable: @asset, user: current_user)
           allow(Comment).to receive(:new).and_return(@comment)
 
-          xhr :post, :create, comment: { commentable_type: asset.to_s.classify, commentable_id: @asset.id, user_id: current_user.id, comment: "Hello" }
+          post :create, params: { comment: { commentable_type: asset.to_s.classify, commentable_id: @asset.id, user_id: current_user.id, comment: "Hello" } }, xhr: true
           expect(assigns[:comment]).to eq(@comment)
           expect(response).to render_template("comments/create")
         end
@@ -111,11 +113,11 @@ describe CommentsController do
     describe "with invalid params" do
       COMMENTABLE.each do |asset|
         it "should expose a newly created but unsaved comment as @comment for #{asset}" do
-          @asset = FactoryGirl.create(asset)
-          @comment = FactoryGirl.build(:comment, commentable: @asset, user: current_user)
+          @asset = create(asset)
+          @comment = build(:comment, commentable: @asset, user: current_user)
           allow(Comment).to receive(:new).and_return(@comment)
 
-          xhr :post, :create, comment: {}
+          post :create, params: { comment: {} }, xhr: true
           expect(assigns[:comment]).to eq(@comment)
           expect(response).to render_template("comments/create")
         end
@@ -178,11 +180,11 @@ describe CommentsController do
       describe "with valid params" do
         COMMENTABLE.each do |asset|
           it "should destroy the requested comment and render [destroy] template" do
-            @asset = FactoryGirl.create(asset)
-            @comment = FactoryGirl.create(:comment, commentable: @asset, user: current_user)
+            @asset = create(asset)
+            @comment = create(:comment, commentable: @asset, user: current_user)
             allow(Comment).to receive(:new).and_return(@comment)
 
-            xhr :delete, :destroy, id: @comment.id
+            delete :destroy, params: { id: @comment.id }, xhr: true
             expect { Comment.find(@comment.id) }.to raise_error(ActiveRecord::RecordNotFound)
             expect(response).to render_template("comments/destroy")
           end

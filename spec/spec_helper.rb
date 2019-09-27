@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -12,7 +14,7 @@ require 'capybara/rails'
 require 'paper_trail/frameworks/rspec'
 
 require 'acts_as_fu'
-require 'factory_girl_rails'
+require 'factory_bot_rails'
 require 'ffaker'
 require 'timecop'
 
@@ -23,7 +25,7 @@ Dir["./spec/support/**/*.rb"].sort.each { |f| require f }
 # Load shared behavior modules to be included by Runner config.
 Dir["./spec/shared/**/*.rb"].sort.each { |f| require f }
 
-TASK_STATUSES = %w(pending assigned completed).freeze
+TASK_STATUSES = %w[pending assigned completed].freeze
 
 I18n.locale = 'en-US'
 
@@ -38,7 +40,15 @@ RSpec.configure do |config|
 
   # RSpec configuration options for Fat Free CRM.
   config.include RSpec::Rails::Matchers
-  config.include FactoryGirl::Syntax::Methods
+  config.include FactoryBot::Syntax::Methods
+  config.include Devise::Test::ControllerHelpers, type: :controller
+  config.include Devise::Test::ControllerHelpers, type: :view
+  config.include Devise::Test::IntegrationHelpers, type: :features
+  config.include Warden::Test::Helpers
+  config.include DeviseHelpers
+  config.include FeatureHelpers
+
+  Warden.test_mode!
 
   config.before(:each) do
     # Overwrite locale settings within "config/settings.yml" if necessary.
@@ -94,11 +104,11 @@ ActionView::Base.class_eval do
   end
 
   def called_from_index_page?(controller = controller_name)
-    if controller != "tasks"
-      request.referer =~ %r{/#{controller}$}
-    else
-      request.referer =~ /tasks\?*/
-    end
+    request.referer =~ if controller != "tasks"
+                         %r{/#{controller}$}
+                       else
+                         /tasks\?*/
+                       end
   end
 
   def called_from_landing_page?(controller = controller_name)

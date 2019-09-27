@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -9,7 +11,7 @@ class CampaignsController < EntitiesController
   # GET /campaigns
   #----------------------------------------------------------------------------
   def index
-    @campaigns = get_campaigns(page: params[:page], per_page: params[:per_page])
+    @campaigns = get_campaigns(page: page_param, per_page: per_page_param)
 
     respond_with @campaigns do |format|
       format.xls { render layout: 'header' }
@@ -69,7 +71,7 @@ class CampaignsController < EntitiesController
 
     if params[:related]
       model, id = params[:related].split('_')
-      if related = model.classify.constantize.my.find_by_id(id)
+      if related = model.classify.constantize.my(current_user).find_by_id(id)
         instance_variable_set("@#{model}", related)
       else
         respond_to_related_not_found(model) && return
@@ -83,7 +85,7 @@ class CampaignsController < EntitiesController
   #----------------------------------------------------------------------------
   def edit
     if params[:previous].to_s =~ /(\d+)\z/
-      @previous = Campaign.my.find_by_id(Regexp.last_match[1]) || Regexp.last_match[1].to_i
+      @previous = Campaign.my(current_user).find_by_id(Regexp.last_match[1]) || Regexp.last_match[1].to_i
     end
 
     respond_with(@campaign)
@@ -139,9 +141,9 @@ class CampaignsController < EntitiesController
   # GET /campaigns/redraw                                                  AJAX
   #----------------------------------------------------------------------------
   def redraw
-    current_user.pref[:campaigns_per_page] = params[:per_page] if params[:per_page]
+    current_user.pref[:campaigns_per_page] = per_page_param if per_page_param
     current_user.pref[:campaigns_sort_by]  = Campaign.sort_by_map[params[:sort_by]] if params[:sort_by]
-    @campaigns = get_campaigns(page: 1, per_page: params[:per_page])
+    @campaigns = get_campaigns(page: 1, per_page: per_page_param)
     set_options # Refresh options
 
     respond_with(@campaigns) do |format|
@@ -153,7 +155,7 @@ class CampaignsController < EntitiesController
   #----------------------------------------------------------------------------
   def filter
     session[:campaigns_filter] = params[:status]
-    @campaigns = get_campaigns(page: 1, per_page: params[:per_page])
+    @campaigns = get_campaigns(page: 1, per_page: per_page_param)
 
     respond_with(@campaigns) do |format|
       format.js { render :index }
@@ -163,7 +165,12 @@ class CampaignsController < EntitiesController
   private
 
   #----------------------------------------------------------------------------
-  alias_method :get_campaigns, :get_list_of_records
+  alias get_campaigns get_list_of_records
+
+  #----------------------------------------------------------------------------
+  def list_includes
+    %i[tags].freeze
+  end
 
   #----------------------------------------------------------------------------
   def respond_to_destroy(method)
@@ -185,12 +192,17 @@ class CampaignsController < EntitiesController
   #----------------------------------------------------------------------------
   def get_data_for_sidebar
     @campaign_status_total = HashWithIndifferentAccess[
-                             all: Campaign.my.count,
+                             all: Campaign.my(current_user).count,
                              other: 0
     ]
     Setting.campaign_status.each do |key|
-      @campaign_status_total[key] = Campaign.my.where(status: key.to_s).count
-      @campaign_status_total[:other] -= @campaign_status_total[key]
+      @campaign_status_total[key] = 0
+    end
+
+    status_counts = Campaign.my(current_user).where(status: Setting.campaign_status).group(:status).count
+    status_counts.each do |key, total|
+      @campaign_status_total[key.to_sym] = total
+      @campaign_status_total[:other] -= total
     end
     @campaign_status_total[:other] += @campaign_status_total[:all]
   end

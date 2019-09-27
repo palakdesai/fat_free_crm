@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -26,8 +28,10 @@
 #
 
 class Task < ActiveRecord::Base
+  include ActiveModel::Serializers::Xml
+
   attr_accessor :calendar
-  ALLOWED_VIEWS = %w(pending assigned completed)
+  ALLOWED_VIEWS = %w[pending assigned completed]
 
   belongs_to :user
   belongs_to :assignee, class_name: "User", foreign_key: :assigned_to
@@ -110,7 +114,7 @@ class Task < ActiveRecord::Base
 
   validates_presence_of :user
   validates_presence_of :name, message: :missing_task_name
-  validates_presence_of :calendar, if: "self.bucket == 'specific_time' && !self.completed_at"
+  validates_presence_of :calendar, if: -> { bucket == 'specific_time' && !completed_at }
   validate :specific_time, unless: :completed?
 
   before_create :set_due_date
@@ -151,21 +155,21 @@ class Task < ActiveRecord::Base
   #----------------------------------------------------------------------------
   def computed_bucket
     return bucket if bucket != "specific_time"
-    case
-    when overdue?
+    if overdue?
       "overdue"
-    when due_today?
+    elsif due_today?
       "due_today"
-    when due_tomorrow?
+    elsif due_tomorrow?
       "due_tomorrow"
-    when due_this_week? && !due_today? && !due_tomorrow?
+    elsif due_this_week? && !due_today? && !due_tomorrow?
       "due_this_week"
-    when due_next_week?
+    elsif due_next_week?
       "due_next_week"
     else
       "due_later"
     end
   end
+
   # Returns list of tasks grouping them by due date as required by tasks/index.
   #----------------------------------------------------------------------------
   def self.find_all_grouped(user, view)
@@ -194,7 +198,7 @@ class Task < ActiveRecord::Base
   def self.totals(user, view = "pending")
     return {} unless ALLOWED_VIEWS.include?(view)
     settings = (view == "completed" ? Setting.task_completed : Setting.task_bucket)
-    settings.inject(HashWithIndifferentAccess[all: 0]) do |hash, key|
+    settings.each_with_object(HashWithIndifferentAccess[all: 0]) do |key, hash|
       hash[key] = (view == "assigned" ? assigned_by(user).send(key).pending.count : my(user).send(key).send(view).count)
       hash[:all] += hash[key]
       hash
@@ -206,28 +210,26 @@ class Task < ActiveRecord::Base
   #----------------------------------------------------------------------------
   def set_due_date
     self.due_at = case bucket
-    when "overdue"
-      due_at || Time.zone.now.midnight.yesterday
-    when "due_today"
-      Time.zone.now.midnight
-    when "due_tomorrow"
-      Time.zone.now.midnight.tomorrow
-    when "due_this_week"
-      Time.zone.now.end_of_week
-    when "due_next_week"
-      Time.zone.now.next_week.end_of_week
-    when "due_later"
-      Time.zone.now.midnight + 100.years
-    when "specific_time"
-      calendar ? parse_calendar_date : nil
-    else # due_later or due_asap
-      nil
+                  when "overdue"
+                    due_at || Time.zone.now.midnight.yesterday
+                  when "due_today"
+                    Time.zone.now.midnight
+                  when "due_tomorrow"
+                    Time.zone.now.midnight.tomorrow
+                  when "due_this_week"
+                    Time.zone.now.end_of_week
+                  when "due_next_week"
+                    Time.zone.now.next_week.end_of_week
+                  when "due_later"
+                    Time.zone.now.midnight + 100.years
+                  when "specific_time"
+                    calendar ? parse_calendar_date : nil
     end
   end
 
   #----------------------------------------------------------------------------
   def due_end_of_day?
-    due_at.present? && (due_at == due_at.end_of_day)
+    due_at.present? && (due_at.change(usec: 0) == due_at.end_of_day.change(usec: 0))
   end
 
   #----------------------------------------------------------------------------

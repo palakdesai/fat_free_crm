@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -9,14 +11,13 @@ feature 'Leads', '
   In order to increase sales
   As a user
   I want to manage leads
-
 ' do
   before(:each) do
     do_login_if_not_already(first_name: 'Bill', last_name: 'Murray')
   end
 
   scenario 'should view a list of leads' do
-    4.times { |i| FactoryGirl.create(:lead, first_name: "L", last_name: "Ead #{i}") }
+    4.times { |i| create(:lead, first_name: "L", last_name: "Ead #{i}") }
     visit leads_page
     expect(leads_element).to have_content('L Ead 0')
     expect(leads_element).to have_content('L Ead 1')
@@ -34,9 +35,13 @@ feature 'Leads', '
       fill_in 'lead_last_name', with: 'Lead'
       fill_in 'lead_email', with: 'mr_lead@example.com'
       fill_in 'lead_phone', with: '+44 1234 567890'
+      click_link 'Status'
+      select 'Myself', from: 'lead_assigned_to'
+      select 'Contacted', from: 'lead_status'
+      select 'Campaign', from: 'lead_source'
       click_link 'Comment'
       fill_in 'comment_body', with: 'This is an important lead.'
-      click_link('Status')
+      click_link 'Status'
       select 'Contacted', from: 'lead_status'
       click_button 'Create Lead'
       expect(leads_element).to have_content('Mr Lead')
@@ -65,7 +70,7 @@ feature 'Leads', '
   end
 
   scenario 'should view and edit a lead', js: true do
-    FactoryGirl.create(:lead, first_name: "Mr", last_name: "Lead", email: "mr_lead@example.com")
+    create(:lead, first_name: "Mr", last_name: "Lead", email: "mr_lead@example.com")
     with_versioning do
       visit leads_page
       click_link 'Mr Lead'
@@ -84,7 +89,7 @@ feature 'Leads', '
   end
 
   scenario 'should delete a lead', js: true do
-    FactoryGirl.create(:lead, first_name: "Mr", last_name: "Lead", email: "mr_lead@example.com")
+    create(:lead, first_name: "Mr", last_name: "Lead", email: "mr_lead@example.com")
     visit leads_page
     click_link 'Mr Lead'
     click_link 'Delete?'
@@ -96,7 +101,7 @@ feature 'Leads', '
   end
 
   scenario 'should search for a lead', js: true do
-    2.times { |i| FactoryGirl.create(:lead, first_name: "Lead", last_name: "\##{i}", email: "lead#{i}@example.com") }
+    2.times { |i| create(:lead, first_name: "Lead", last_name: "\##{i}", email: "lead#{i}@example.com") }
     visit leads_page
     expect(leads_element).to have_content('Lead #0')
     expect(leads_element).to have_content('Lead #1')

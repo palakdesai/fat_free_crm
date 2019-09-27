@@ -1,7 +1,9 @@
-# Fat Free CRM [![TravisCI][travis-img-url]][travis-ci-url]  [![Code Climate](https://codeclimate.com/github/fatfreecrm/fat_free_crm.png)](https://codeclimate.com/github/fatfreecrm/fat_free_crm)
+# Fat Free CRM [![TravisCI][travis-img-url]][travis-ci-url]  [![Code Climate][codeclimate-img-url]][codeclimate-url]
 
-[travis-img-url]: https://secure.travis-ci.org/fatfreecrm/fat_free_crm.png?branch=master
-[travis-ci-url]: http://travis-ci.org/fatfreecrm/fat_free_crm
+[travis-img-url]: https://secure.travis-ci.org/fatfreecrm/fat_free_crm.svg?branch=master
+[travis-ci-url]: https://travis-ci.org/fatfreecrm/fat_free_crm
+[codeclimate-img-url]: https://codeclimate.com/github/fatfreecrm/fat_free_crm.svg
+[codeclimate-url]: https://codeclimate.com/github/fatfreecrm/fat_free_crm
 
 ### An open source, Ruby on Rails [customer relationship management][crm-wiki] platform (CRM).
 
@@ -48,21 +50,10 @@ Pull requests and bug reports are always welcome!
 
 Visit our website at http://www.fatfreecrm.com/
 
-## Rails 4 support
-
-The master branch is now on Rails 4.2. However, there is a [Rails 3.2 branch](https://github.com/fatfreecrm/fat_free_crm/tree/rails3) available if you still need to use it. Please note that subsequent gem releases will focus on Rails 4 (v0.14.0+ as yet unreleased).
-
-## Important security note
-
-Please note that several severe vulnerabilities have been fixed recently. You should upgrade to the most recent 0.13.x version or higher. See the [**security vulnerabilities**](https://github.com/fatfreecrm/fat_free_crm/wiki/Security) page for more details.
 
 ## System Requirements
 
-* Ruby 2.2 (master branch / rails 4 versions only)
-* Ruby 2.1 (or 2.0) recommended (it's much faster!)
-  * Ruby 1.9.3 is also compatible
-  * Ruby 1.9.2 should be compatible but is no longer supported
-  * Ruby v1.8.7 was supported until v0.11.4 (see https://github.com/fatfreecrm/fat_free_crm/tree/ruby1.8)
+* Ruby 2.4+ recommended
 * MySQL v4.1.1 or later (v5+ is recommended), SQLite v3.4 or later, or Postgres 8.4.8 or later.
 * ImageMagick (optional, only needed if you would like to use avatars)
 
@@ -73,19 +64,19 @@ Please note that several severe vulnerabilities have been fixed recently. You sh
 
 Please view one of the following installation guides:
 
-### [Setup Linux or Mac OS](http://guides.fatfreecrm.com/Setup-Linux-or-Mac-OS.html)
+### [Setup Linux or Mac OS](http://guides.fatfreecrm.com/Setup-Linux-or-Mac-OS)
 
 Installing Fat Free CRM on Linux or Mac OS X
 
-### [Setup Heroku](http://guides.fatfreecrm.com/Setup-Heroku.html)
+### [Setup Heroku](http://guides.fatfreecrm.com/Setup-Heroku)
 
 Setting up a Heroku instance for Fat Free CRM
 
-### [Setup Microsoft Windows](http://guides.fatfreecrm.com/Setup-Microsoft-Windows.html)
+### [Setup Microsoft Windows](http://guides.fatfreecrm.com/Setup-Microsoft-Windows)
 
 Installing Fat Free CRM on Microsoft Windows
 
-### [Running Fat Free CRM as a Rails Engine](http://guides.fatfreecrm.com/Running-as-a-Rails-Engine.html)
+### [Running Fat Free CRM as a Rails Engine](http://guides.fatfreecrm.com/Running-as-a-Rails-Engine)
 
 Run the Fat Free CRM gem within a separate Rails application.
 This is the best way to deploy Fat Free CRM if you need to add plugins or make any customizations. Note that it is not yet simple to 'bolt' Fat Free CRM into your existing rails project, but we're heading in that direction.
@@ -93,7 +84,7 @@ This is the best way to deploy Fat Free CRM if you need to add plugins or make a
 
 ## Upgrading from previous versions of Fat Free CRM
 
-Please read the [Release Notes](https://github.com/fatfreecrm/fat_free_crm/blob/master/CHANGELOG) document for more detailed information on upgrading from previous versions.
+Please read the [Changelog](https://github.com/fatfreecrm/fat_free_crm/blob/master/CHANGELOG.md) document for more detailed information on upgrading from previous versions.
 
 
 ## Resources
@@ -115,7 +106,7 @@ Please read the [Release Notes](https://github.com/fatfreecrm/fat_free_crm/blob/
 
 ## For Developers
 
-Fat Free CRM is released under the MIT license and is freely available for you to use for your own purposes. We do encourage contributions to make Fat Free CRM even better. Send us a pull-request and we'll do our best to accomodate your needs.
+Fat Free CRM is released under the MIT license and is freely available for you to use for your own purposes. We do encourage contributions to make Fat Free CRM even better. Send us a pull-request and we'll do our best to accommodate your needs.
 
 Specific features that are not 'Fat Free' in nature, can be added by creating Rails Engines. See the [wiki](http://github.com/fatfreecrm/fat_free_crm/wiki) for information on how to do this.
 
@@ -125,15 +116,18 @@ Tests can easily be run by typing 'rake' but please note that they do take a whi
 ## Main contributors
 
 * [Michael Dvorkin (@michaeldv)](https://github.com/michaeldv) - Founding creator
-* [Steve Kenworthy (@steveyken)](https://github.com/steveyken) - Maintainer
-* [Nathan Broadbent (@ndbroadbent)](https://github.com/ndbroadbent)
+* CloCkWeRX
+* johnnyshield
+* DmitryAvramec
+* steveyken
 
-See the [contributors graph](https://github.com/fatfreecrm/fat_free_crm/graphs/contributors) and the [contributors file](https://github.com/fatfreecrm/fat_free_crm/blob/master/CONTRIBUTORS) for further details.
+
+See the [contributors graph](https://github.com/fatfreecrm/fat_free_crm/graphs/contributors) and the [contributors file](https://github.com/fatfreecrm/fat_free_crm/blob/master/CONTRIBUTORS.md) for further details.
 
 ## License
 
 Fat Free CRM
-Copyright (c) 2008-2014 Michael Dvorkin and contributors.
+Copyright (c) 2008-2018 Michael Dvorkin and contributors.
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -12,18 +14,18 @@ describe "/accounts/index" do
     view.lookup_context.prefixes << 'entities'
     assign :per_page, Account.per_page
     assign :sort_by,  Account.sort_by
-    assign :ransack_search, Account.search
-    login_and_assign
+    assign :ransack_search, Account.ransack
+    login
   end
 
   it "should render account name" do
-    assign(:accounts, [FactoryGirl.create(:account, name: 'New Media Inc'), FactoryGirl.create(:account)].paginate)
+    assign(:accounts, [build_stubbed(:account, name: 'New Media Inc'), build_stubbed(:account)].paginate)
     render
     expect(rendered).to have_tag('a', text: "New Media Inc")
   end
 
   it "should render list of accounts if list of accounts is not empty" do
-    assign(:accounts, [FactoryGirl.create(:account), FactoryGirl.create(:account)].paginate)
+    assign(:accounts, [build_stubbed(:account), build_stubbed(:account)].paginate)
 
     render
     expect(view).to render_template(partial: "_account")

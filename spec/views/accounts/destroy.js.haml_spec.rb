@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -9,8 +11,8 @@ describe "/accounts/destroy" do
   include AccountsHelper
 
   before do
-    login_and_assign
-    assign(:account, @account = FactoryGirl.create(:account))
+    login
+    assign(:account, @account = build_stubbed(:account))
     assign(:accounts, [@account].paginate)
     assign(:account_category_total, Hash.new(1))
     render

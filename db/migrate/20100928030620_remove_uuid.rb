@@ -1,17 +1,17 @@
-class RemoveUuid < ActiveRecord::Migration
+# frozen_string_literal: true
+
+class RemoveUuid < ActiveRecord::Migration[4.2]
   @@uuid_configured = false
 
   def self.up
-    [:users, :accounts, :campaigns, :leads, :contacts, :opportunities, :tasks].each do |table|
+    %i[users accounts campaigns leads contacts opportunities tasks].each do |table|
       remove_column table, :uuid
-      if self.uuid_configured?
-        execute("DROP TRIGGER IF EXISTS #{table}_uuid")
-      end
+      execute("DROP TRIGGER IF EXISTS #{table}_uuid") if uuid_configured?
     end
   end
 
   def self.down
-    fail ActiveRecord::IrreversibleMigration, "Can't recover deleted UUIDs"
+    raise ActiveRecord::IrreversibleMigration, "Can't recover deleted UUIDs"
   end
 
   private

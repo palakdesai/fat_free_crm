@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -57,7 +59,7 @@ SimpleForm.setup do |config|
   # config.collection_value_methods = [ :id, :to_s ]
 
   # How the label text should be generated altogether with the required text.
-  config.label_text = lambda { |label, _required, _explicit_label| "#{label}" }
+  config.label_text = ->(label, _required, _explicit_label) { label.to_s }
 
   # You can define the class to use on all labels. Default is nil.
   # config.label_class = nil

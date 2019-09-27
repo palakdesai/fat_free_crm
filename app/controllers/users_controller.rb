@@ -1,15 +1,18 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
 # See MIT-LICENSE file or http://www.opensource.org/licenses/mit-license.php
 #------------------------------------------------------------------------------
 class UsersController < ApplicationController
-  before_action :set_current_tab, only: [:show, :opportunities_overview] # Don't hightlight any tabs.
+  before_action :set_current_tab, only: %i[show opportunities_overview] # Don't hightlight any tabs.
 
   check_authorization
+
   load_and_authorize_resource # handles all security
 
-  respond_to :html, only: [:show, :new]
+  respond_to :html, only: %i[show new]
 
   # GET /users/1
   # GET /users/1.js
@@ -17,30 +20,6 @@ class UsersController < ApplicationController
   def show
     @user = current_user if params[:id].nil?
     respond_with(@user)
-  end
-
-  # GET /users/new
-  # GET /users/new.js
-  #----------------------------------------------------------------------------
-  def new
-    respond_with(@user)
-  end
-
-  # POST /users
-  # POST /users.js
-  #----------------------------------------------------------------------------
-  def create
-    if @user.save
-      if Setting.user_signup == :needs_approval
-        flash[:notice] = t(:msg_account_created)
-        redirect_to login_url
-      else
-        flash[:notice] = t(:msg_successful_signup)
-        redirect_back_or_default profile_url
-      end
-    else
-      render :new
-    end
   end
 
   # GET /users/1/edit.js
@@ -54,6 +33,7 @@ class UsersController < ApplicationController
   #----------------------------------------------------------------------------
   def update
     @user.update_attributes(user_params)
+    flash[:notice] = t(:msg_user_updated)
     respond_with(@user)
   end
 
@@ -101,14 +81,14 @@ class UsersController < ApplicationController
   # PUT /users/1/change_password.js
   #----------------------------------------------------------------------------
   def change_password
-    if @user.valid_password?(params[:current_password], true) || @user.password_hash.blank?
-      unless params[:user][:password].blank?
+    if @user.valid_password?(params[:current_password])
+      if params[:user][:password].blank?
+        flash[:notice] = t(:msg_password_not_changed)
+      else
         @user.password = params[:user][:password]
         @user.password_confirmation = params[:user][:password_confirmation]
         @user.save
         flash[:notice] = t(:msg_password_changed)
-      else
-        flash[:notice] = t(:msg_password_not_changed)
       end
     else
       @user.errors.add(:current_password, t(:msg_invalid_password))
@@ -128,12 +108,14 @@ class UsersController < ApplicationController
   #----------------------------------------------------------------------------
   def opportunities_overview
     @users_with_opportunities = User.have_assigned_opportunities.order(:first_name)
-    @unassigned_opportunities = Opportunity.my.unassigned.pipeline.order(:stage)
+    @unassigned_opportunities = Opportunity.my(current_user).unassigned.pipeline.order(:stage).includes(:account, :user, :tags)
   end
 
   protected
 
   def user_params
+    return {} unless params[:user]
+    params[:user][:email].try(:strip!)
     params[:user].permit(
       :username,
       :email,
@@ -152,6 +134,7 @@ class UsersController < ApplicationController
   end
 
   def avatar_params
+    return {} unless params[:avatar]
     params[:avatar]
       .permit(:image)
       .merge(entity: @user)

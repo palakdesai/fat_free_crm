@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -7,7 +9,7 @@ require File.expand_path(File.dirname(__FILE__) + '/../spec_helper')
 
 describe FatFreeCRM::CommentExtensions do
   describe "add_comment_by_user" do
-    let(:user) { FactoryGirl.create(:user) }
+    let(:user) { create(:user) }
 
     before :each do
       build_model(:commentable_entity) do

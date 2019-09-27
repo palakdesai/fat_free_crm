@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -34,12 +36,12 @@ describe ApplicationHelper do
   end
 
   it "link_to_discard" do
-    lead = FactoryGirl.create(:lead)
+    lead = create(:lead)
     allow(controller.request).to receive(:fullpath).and_return("http://www.example.com/leads/#{lead.id}")
 
     link = helper.link_to_discard(lead)
     expect(link).to match(%r{leads/#{lead.id}/discard})
-    expect(link).to match(%r{attachment=Lead&amp;attachment_id=#{lead.id}})
+    expect(link).to match(/attachment=Lead&amp;attachment_id=#{lead.id}/)
   end
 
   describe "shown_on_landing_page?" do
@@ -72,12 +74,13 @@ describe ApplicationHelper do
     before(:each) do
       @user = mock_model(User)
       allow(helper).to receive(:current_user).and_return(@user)
-      allow(controller).to receive(:params).and_return('action' => 'show', 'controller' => 'contacts')
+      allow(controller).to receive(:action_name).and_return('show')
+      allow(controller).to receive(:controller_name).and_return('contacts')
     end
 
     it "should return the contact 'show' outline stored in the user preferences" do
       expect(@user).to receive(:pref).and_return(contacts_show_view: 'long')
-      expect(helper.current_view_name).to eq('long')
+      expect(helper.send(:current_view_name)).to eq('long')
     end
   end
 end

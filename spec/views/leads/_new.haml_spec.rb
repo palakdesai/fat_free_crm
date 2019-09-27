@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -9,10 +11,10 @@ describe "/leads/_new" do
   include LeadsHelper
 
   before do
-    login_and_assign
-    assign(:lead, FactoryGirl.build(:lead))
+    login
+    assign(:lead, build(:lead))
     assign(:users, [current_user])
-    assign(:campaign, @campaign = FactoryGirl.create(:campaign))
+    assign(:campaign, @campaign = build_stubbed(:campaign))
     assign(:campaigns, [@campaign])
   end
 

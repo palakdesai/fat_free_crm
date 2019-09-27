@@ -1,32 +1,38 @@
 sudo: false
 language: ruby
 rvm:
-  - 1.9.3
-  - 2.0.0
-  - 2.1.5
-  - 2.2.0
+  - 2.4.2
+  - 2.5.0
 
 env:
-  - DB=mysql
-  - DB=postgres
-  - DB=sqlite
+  global:
+    - BROWSER=chrome
+  matrix:
+    - DB=postgres TEST_SUITE=rubocop
+    - DB=postgres TEST_SUITE="rake spec:features"
+    - DB=postgres TEST_SUITE="rake spec:models"
+    - DB=postgres TEST_SUITE="rake spec:controllers spec:lib spec:routing spec:mailers"
+    - DB=postgres TEST_SUITE="rake spec:views spec:helpers"
+    - DB=mysql TEST_SUITE="rake spec:models"
+    - DB=sqlite TEST_SUITE="rake spec:models"
 
 matrix:
+  fast_finish: true
   exclude:
-    - rvm: 1.9.3
-      env: DB=mysql
-    - rvm: 1.9.3
-      env: DB=sqlite
-    - rvm: 2.0.0
-      env: DB=mysql
-    - rvm: 2.0.0
-      env: DB=sqlite
-    - rvm: 2.2.0
-      env: DB=mysql
-    - rvm: 2.2.0
-      env: DB=sqlite
+    - rvm: 2.5.0
+      env: DB=postgres TEST_SUITE=rubocop
+  allow_failures:
+    - rvm: 2.4.2
+      env: DB=mysql TEST_SUITE="rake spec:models"
+    - rvm: 2.4.2
+      env: DB=sqlite TEST_SUITE="rake spec:models"
+    - rvm: 2.5.0
+      env: DB=mysql TEST_SUITE="rake spec:models"
+    - rvm: 2.5.0
+      env: DB=sqlite TEST_SUITE="rake spec:models"
 
-gemfile: Gemfile.ci
+addons:
+  chrome: stable
 
 bundler_args: --path=vendor/bundle --without heroku
 
@@ -37,13 +43,16 @@ before_install:
   - "sh -e /etc/init.d/xvfb start"
 
 before_script:
+  # gem update --system is a workaround for travis-ci/travis-ci#8978
+  - "gem update --system"
   - sh -c "cp config/database.$DB.yml config/database.yml"
   - sh -c "if [ \"$DB\" = 'postgres' ]; then psql -c 'create database fat_free_crm_test;' -U postgres; fi"
   - sh -c "if [ \"$DB\" = 'mysql' ]; then mysql -e 'create database fat_free_crm_test;'; fi"
-  - sh -c "RAILS_ENV=test bundle exec rake db:schema:load"
+  - "RAILS_ENV=test bundle exec rake spec:preparedb"
 
 # Run specs
-script: "RAILS_ENV=test bundle exec rake"
+script:
+  - "RAILS_ENV=test bundle exec $TEST_SUITE"
 
 notifications:
   webhooks:

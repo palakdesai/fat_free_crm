@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -7,8 +9,8 @@ require 'spec_helper'
 
 describe "/campaigns/update" do
   before do
-    login_and_assign
-    assign(:campaign, @campaign = FactoryGirl.create(:campaign, user: current_user))
+    login
+    assign(:campaign, @campaign = build_stubbed(:campaign, user: current_user))
     assign(:users, [current_user])
     assign(:status, Setting.campaign_status)
     assign(:campaign_status_total, Hash.new(1))
@@ -46,7 +48,7 @@ describe "/campaigns/update" do
         expect(rendered).to include(%/$('#campaign_#{@campaign.id}').effect("highlight"/)
       end
     end
-  end # no errors
+  end
 
   describe "validation errors:" do
     describe "on landing page -" do
@@ -76,5 +78,5 @@ describe "/campaigns/update" do
         expect(rendered).to include('focus()')
       end
     end
-  end # errors
+  end
 end

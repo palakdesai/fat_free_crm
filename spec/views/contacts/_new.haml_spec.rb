@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -9,8 +11,8 @@ describe "/contacts/_new" do
   include ContactsHelper
 
   before do
-    login_and_assign
-    @account = FactoryGirl.create(:account)
+    login
+    @account = build_stubbed(:account)
     assign(:contact, Contact.new)
     assign(:users, [current_user])
     assign(:account, @account)

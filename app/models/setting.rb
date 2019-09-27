@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -56,15 +58,11 @@ class Setting < ActiveRecord::Base
       # Check database
       if database_and_table_exists?
         if setting = find_by_name(name.to_s)
-          unless setting.value.nil?
-            return cache[name] = setting.value
-          end
+          return cache[name] = setting.value unless setting.value.nil?
         end
       end
       # Check YAML settings
-      if yaml_settings.key?(name)
-        return cache[name] = yaml_settings[name]
-      end
+      return cache[name] = yaml_settings[name] if yaml_settings.key?(name)
     end
 
     # Set setting value
@@ -85,11 +83,28 @@ class Setting < ActiveRecord::Base
       send(setting).map { |key| [key.is_a?(Symbol) ? I18n.t(key) : key, key.to_sym] }
     end
 
+    # Retrieves the value object corresponding to the each key objects repeatedly.
+    # Equivalent to the #dig method on a Hash.
+    #-------------------------------------------------------------------
+    def dig(key, *rest)
+      value = self[key]
+      if value.nil? || rest.empty?
+        value
+      elsif value.respond_to?(:dig)
+        value.dig(*rest)
+      else
+        raise TypeError, "#{value.class} does not have #dig method"
+      end
+    end
+
     def database_and_table_exists?
       # Returns false if table or database is unavailable.
       # Catches all database-related errors, so that Setting will return nil
       # instead of crashing the entire application.
-      table_exists? rescue false
+
+      table_exists?
+    rescue StandardError
+      false
     end
 
     # Loads settings from YAML files

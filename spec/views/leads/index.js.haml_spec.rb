@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -9,11 +11,11 @@ describe "/leads/index" do
   include LeadsHelper
 
   before do
-    login_and_assign
+    login
   end
 
   it "should render [lead] template with @leads collection if there are leads" do
-    assign(:leads, [FactoryGirl.create(:lead, id: 42)].paginate(page: 1, per_page: 20))
+    assign(:leads, [build_stubbed(:lead, id: 42)].paginate(page: 1, per_page: 20))
 
     render template: 'leads/index', formats: [:js]
 

@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -9,9 +11,9 @@ describe "/opportunities/_new" do
   include OpportunitiesHelper
 
   before do
-    login_and_assign
-    assign(:opportunity, FactoryGirl.build(:opportunity))
-    @account = FactoryGirl.create(:account)
+    login
+    assign(:opportunity, build(:opportunity))
+    @account = build_stubbed(:account)
     assign(:account, @account)
     assign(:accounts, [@account])
     assign(:users, [current_user])

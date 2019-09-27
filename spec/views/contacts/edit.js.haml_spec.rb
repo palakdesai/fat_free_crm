@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -9,10 +11,10 @@ describe "/contacts/edit" do
   include ContactsHelper
 
   before do
-    login_and_assign
-    assign(:contact, @contact = FactoryGirl.create(:contact, user: current_user))
+    login
+    assign(:contact, @contact = build_stubbed(:contact, user: current_user))
     assign(:users, [current_user])
-    assign(:account, @account = FactoryGirl.create(:account))
+    assign(:account, @account = build_stubbed(:account))
     assign(:accounts, [@account])
   end
 
@@ -33,7 +35,7 @@ describe "/contacts/edit" do
 
   it "edit: should hide previously open [Edit Contact] for and replace it with contact partial" do
     params[:cancel] = nil
-    assign(:previous, previous = FactoryGirl.create(:contact, user: current_user))
+    assign(:previous, previous = build_stubbed(:contact, user: current_user))
 
     render
     expect(rendered).to include("$('#contact_#{previous.id}').replaceWith")

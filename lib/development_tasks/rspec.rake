@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 # Copyright (c) 2008-2013 Michael Dvorkin and contributors.
 #
 # Fat Free CRM is freely distributable under the terms of MIT license.
@@ -7,8 +9,8 @@ if defined?(RSpec)
   require 'rspec/core/rake_task'
 
   namespace :spec do
-    desc "Preparing test env"
-    task :prepare do
+    desc "Preparing test env db"
+    task :preparedb do
       tmp_env = Rails.env
       Rails.env = "test"
       Rake::Task["ffcrm:config:copy_database_yml"].invoke
@@ -17,8 +19,4 @@ if defined?(RSpec)
       Rails.env = tmp_env
     end
   end
-
-  Rake::Task["spec"].prerequisites.clear
-  Rake::Task["spec"].prerequisites.push("spec:prepare")
-
 end
