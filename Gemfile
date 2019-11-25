@@ -1,20 +1,20 @@
 # frozen_string_literal: true
 
 source 'https://rubygems.org'
-ruby '2.2.7'
+# ruby '2.2.7'
 # Uncomment the database that you have configured in config/database.yml
 # ----------------------------------------------------------------------
 
-case ENV['CI'] && ENV['DB']
-when 'sqlite'
-  gem 'sqlite3'
-when 'mysql'
+# case ENV['CI'] && ENV['DB']
+# when 'sqlite'
+#   gem 'sqlite3'
+# when 'mysql'
   gem 'mysql2'
-when 'postgres'
-  gem 'pg', '~> 0.21.0' # Pinned, see https://github.com/fatfreecrm/fat_free_crm/pull/689
-else
-  gem 'pg', '~> 0.21.0'
-end
+# when 'postgres'
+#   gem 'pg', '~> 0.21.0' # Pinned, see https://github.com/fatfreecrm/fat_free_crm/pull/689
+# else
+#   gem 'pg', '~> 0.21.0'
+# end
 
 # Removes a gem dependency
 def remove(name)
