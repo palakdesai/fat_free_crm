@@ -2,7 +2,7 @@ if [ "$1" == "start" ]
 then
 export RAILS_ENV=development
 rails s > log/serv_logs.log &
-bundle exec rails s -b 0.0.0.0 -p 80 -e development > log/serv_logs.log &
+
 #bundle exec rails s -b 0.0.0.0 -p 80 -e development > log/serv_logs.log &
 #rails s -e development -p 80 -b 0.0.0.0 > log/serv_logs.log &
 #puma -p 80 -e development > log/serv_logs.log &
