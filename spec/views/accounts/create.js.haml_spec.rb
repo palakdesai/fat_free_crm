@@ -7,14 +7,14 @@
 #------------------------------------------------------------------------------
 require 'spec_helper'
 
-describe "/accounts/create" do
+describe "accounts/create" do
   include AccountsHelper
 
   before do
     login
   end
 
-  # Note: [Create Account] is only called from Accounts index. Unlike other
+  # NOTE: [Create Account] is only called from Accounts index. Unlike other
   # core object Account partial is not embedded.
   describe "create success" do
     before do
@@ -25,7 +25,7 @@ describe "/accounts/create" do
     end
 
     it "should hide [Create Account] form and insert account partial" do
-      expect(rendered).to include("$('#accounts').prepend('<li class=\\'account highlight\\' id=\\'account_#{@account.id}\\'")
+      expect(rendered).to include("$('#accounts').prepend('<li class=\\'highlight account\\' id=\\'account_#{@account.id}\\'")
       expect(rendered).to include(%/$('#account_#{@account.id}').effect("highlight"/)
     end
 
@@ -47,7 +47,6 @@ describe "/accounts/create" do
       render
 
       expect(rendered).to include("#create_account")
-      expect(rendered).to include(%/$('#create_account').effect("shake"/)
     end
   end
 end

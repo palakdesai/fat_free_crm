@@ -5,16 +5,16 @@ source 'https://rubygems.org'
 # Uncomment the database that you have configured in config/database.yml
 # ----------------------------------------------------------------------
 
-# case ENV['CI'] && ENV['DB']
-# when 'sqlite'
-#   gem 'sqlite3'
-# when 'mysql'
+case ENV['CI'] && ENV['DB']
+when 'sqlite'
+  gem 'sqlite3', '~> 1.6.8'
+when 'mysql'
   gem 'mysql2'
-# when 'postgres'
-#   gem 'pg', '~> 0.21.0' # Pinned, see https://github.com/fatfreecrm/fat_free_crm/pull/689
-# else
-#   gem 'pg', '~> 0.21.0'
-# end
+when 'postgres'
+  gem 'pg'
+else
+  gem 'pg'
+end
 
 # Removes a gem dependency
 def remove(name)
@@ -30,7 +30,7 @@ end
 # Bundler no longer treats runtime dependencies as base dependencies.
 # The following code restores this behaviour.
 # (See https://github.com/carlhuda/bundler/issues/1041)
-spec = Bundler.load_gemspec(File.expand_path("../fat_free_crm.gemspec", __FILE__))
+spec = Bundler.load_gemspec(File.expand_path('fat_free_crm.gemspec', __dir__))
 spec.runtime_dependencies.each do |dep|
   gem dep.name, *dep.requirement.as_list
 end
@@ -65,8 +65,8 @@ group :development, :test do
   gem 'headless'
   gem 'byebug'
   gem 'pry-rails' unless ENV["CI"]
-  gem 'factory_bot_rails'
-  gem 'rubocop', '~> 0.52.0' # Pinned because upgrades require regenerating rubocop_todo.yml
+  gem 'factory_bot_rails', '~> 6.0'
+  gem 'rubocop'
   gem 'rainbow'
   gem 'puma' # used by capybara 3
 end
@@ -74,11 +74,12 @@ end
 group :test do
   gem 'capybara'
   gem 'selenium-webdriver'
-  gem 'chromedriver-helper'
+  gem 'webdrivers'
   gem 'database_cleaner'
-  gem 'acts_as_fu'
   gem 'zeus', platform: :ruby unless ENV["CI"]
   gem 'timecop'
+  gem 'sqlite3', '~> 1.6.8'
+  gem 'webrick'
 end
 
 group :heroku do
@@ -86,11 +87,14 @@ group :heroku do
   gem 'puma'
 end
 
-gem 'sass-rails', '~> 5.0.3' # sass-rails 6 requires GCC 4.5+
+gem 'responds_to_parent', git: 'https://github.com/RedPatchTechnologies/responds_to_parent.git', branch: 'master' # Temporarily pointed at git until https://github.com/zendesk/responds_to_parent/pull/7 is released
+gem 'acts_as_commentable', git: 'https://github.com/fatfreecrm/acts_as_commentable.git', branch: 'main' # Our fork
+gem 'sassc-rails'
 gem 'coffee-rails'
 gem 'uglifier'
 gem 'execjs'
-gem 'therubyracer', platform: :ruby unless ENV["CI"]
+# gem 'therubyracer', platform: :ruby unless ENV["CI"]
+gem 'mini_racer'
 gem 'nokogiri', '>= 1.8.1'
 gem 'activemodel-serializers-xml'
 gem 'bootsnap', require: false
@@ -98,4 +102,9 @@ gem 'devise', '~>4.6'
 gem 'devise-i18n'
 gem "devise-encryptable"
 gem 'tzinfo-data', platforms: %i[mingw mswin x64_mingw jruby]
-gem 'activejob', '~> 5.1.6.1'
+gem 'activejob'
+gem 'ransack_ui'
+gem 'bootstrap', '~>5.0.0'
+gem 'mini_magick'
+gem 'image_processing', '~> 1.2'
+gem 'jquery-ui-rails', git: 'https://github.com/jquery-ui-rails/jquery-ui-rails.git', tag: 'v7.0.0' # See https://github.com/jquery-ui-rails/jquery-ui-rails/issues/146

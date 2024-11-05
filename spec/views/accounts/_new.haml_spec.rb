@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 
-describe "/accounts/_new" do
+describe "accounts/_new" do
   include AccountsHelper
 
   before do
@@ -23,7 +23,7 @@ describe "/accounts/_new" do
     expect(view).to render_template(partial: "_contact_info")
     expect(view).to render_template(partial: "_permissions")
 
-    expect(rendered).to have_tag("form[class=new_account]")
+    expect(rendered).to have_tag('form[class="simple_form new_account"]')
   end
 
   it "should render background info field if settings require so" do

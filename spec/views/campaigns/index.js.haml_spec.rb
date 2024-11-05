@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 require 'spec_helper'
 
-describe "/campaigns/index" do
+describe "campaigns/index" do
   include CampaignsHelper
 
   before do
@@ -19,7 +19,7 @@ describe "/campaigns/index" do
 
     render template: 'campaigns/index', formats: [:js]
 
-    expect(rendered).to include("$('#campaigns').html('<li class=\\'campaign highlight\\' id=\\'campaign_42\\'")
+    expect(rendered).to include("$('#campaigns').html('<li class=\\'highlight campaign\\' id=\\'campaign_42\\'")
     expect(rendered).to include("#paginate")
   end
 

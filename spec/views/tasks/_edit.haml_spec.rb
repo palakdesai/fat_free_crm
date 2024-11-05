@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 require 'spec_helper'
 
-describe "/tasks/_edit" do
+describe "tasks/_edit" do
   include TasksHelper
 
   before do
@@ -23,7 +23,7 @@ describe "/tasks/_edit" do
 
     expect(view).to render_template(partial: "tasks/_top_section")
 
-    expect(rendered).to have_tag("form[class=edit_task]")
+    expect(rendered).to have_tag('form[class="simple_form edit_task"]')
   end
 
   ["As Soon As Possible", "Today", "Tomorrow", "This Week", "Next Week", "Sometime Later"].each do |day|

@@ -12,16 +12,16 @@
 
 namespace :license do
   FILES = { ruby: [
-    "app/**/*.rb",
-    "app/**/*.coffee",
-    "lib/**/*.rake",
-    "lib/fat_free_crm/**/*.rb",
-    "lib/fat_free_crm.rb",
-    "spec/**/*.rb",
-    "spec/spec_helper.rb",
-    "config/**/*.rb",
-    "config/settings.default.yml"
-  ],
+              "app/**/*.rb",
+              "app/**/*.coffee",
+              "lib/**/*.rake",
+              "lib/fat_free_crm/**/*.rb",
+              "lib/fat_free_crm.rb",
+              "spec/**/*.rb",
+              "spec/spec_helper.rb",
+              "config/**/*.rb",
+              "config/settings.default.yml"
+            ],
             js: [
               "app/assets/javascripts/**/*.js",
               "app/assets/javascripts/**/*.js.erb",
@@ -44,8 +44,8 @@ namespace :license do
                css: "/*\n" + LICENSE_RB.gsub(/^#/, ' *').sub(/---\n/, "---\n */\n") }
 
   REGEXPS  = { ruby: /^# Copyright \(c\).*?\n(?:#.*\n)*?#-{10}-*\n/,
-               js: /^\/\/ Copyright \(c\).*?\n(?:\/\/.*\n)*?\/\/-{10}-*\n/,
-               css: /^\/\*\n \* Copyright \(c\).*?\n(?: \*.*\n)*? \*-{10}-*\n \*\/\n/ }
+               js: %r{^// Copyright \(c\).*?\n(?://.*\n)*?//-{10}-*\n},
+               css: %r{^/\*\n \* Copyright \(c\).*?\n(?: \*.*\n)*? \*-{10}-*\n \*/\n} }
 
   def expand_globs(globs)
     globs.map { |f| Dir.glob(f) }.flatten.uniq

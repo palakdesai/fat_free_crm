@@ -5,7 +5,7 @@
 # Fat Free CRM is freely distributable under the terms of MIT license.
 # See MIT-LICENSE file or http://www.opensource.org/licenses/mit-license.php
 #------------------------------------------------------------------------------
-require File.expand_path("../acceptance_helper.rb", __FILE__)
+require File.expand_path('acceptance_helper.rb', __dir__)
 
 feature 'Campaigns', '
   In order to increase customer satisfaction
@@ -31,7 +31,7 @@ feature 'Campaigns', '
       click_link 'Create Campaign'
       expect(page).to have_selector('#campaign_name', visible: true)
       fill_in 'campaign_name', with: 'Cool Campaign'
-      select 'On Hold', from: 'campaign_status'
+      select2 'On Hold', from: 'Status:'
       click_link 'Comment'
       fill_in 'comment_body', with: 'This campaign is very important'
       click_button 'Create Campaign'
@@ -55,8 +55,7 @@ feature 'Campaigns', '
     click_link 'Comment'
     fill_in 'comment_body', with: 'This campaign is very important'
     click_button 'Create Campaign'
-
-    expect(find('#comment_body')).to have_content('This campaign is very important')
+    expect(find('#comment_body').value).to eq('This campaign is very important')
   end
 
   scenario 'should view and edit a campaign', js: true do
@@ -66,7 +65,7 @@ feature 'Campaigns', '
       click_link 'My Cool Campaign'
       click_link 'Edit'
       fill_in 'campaign_name', with: 'My Even Cooler Campaign'
-      select 'Started', from: 'campaign_status'
+      select2 'Started', from: 'Status:'
       click_button 'Save Campaign'
       expect(page).to have_content('My Even Cooler Campaign')
       expect(page).to have_content('My Even Cooler Campaign')

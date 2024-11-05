@@ -32,7 +32,7 @@ class UsersController < ApplicationController
   # PUT /users/1.js
   #----------------------------------------------------------------------------
   def update
-    @user.update_attributes(user_params)
+    @user.update(user_params)
     flash[:notice] = t(:msg_user_updated)
     respond_with(@user)
   end
@@ -54,9 +54,9 @@ class UsersController < ApplicationController
       render
     else
       if params[:avatar]
-        avatar = Avatar.create(avatar_params)
-        if avatar.valid?
-          @user.avatar = avatar
+        @avatar = Avatar.create(avatar_params)
+        if @avatar.valid?
+          @user.avatar = @avatar
         else
           @user.avatar.errors.clear
           @user.avatar.errors.add(:image, t(:msg_bad_image_file))
@@ -111,11 +111,28 @@ class UsersController < ApplicationController
     @unassigned_opportunities = Opportunity.my(current_user).unassigned.pipeline.order(:stage).includes(:account, :user, :tags)
   end
 
+  def auto_complete
+    @query = params[:term] || ''
+    @users = User.my(current_user).text_search(@query).limit(10).order(:first_name, :last_name)
+
+    respond_to do |format|
+      format.json do
+        results = @users.map do |a|
+          helpers.j(a.full_name + " (@" + a.username + ")")
+        end
+        render json: results
+      end
+    end
+  end
+
   protected
 
   def user_params
     return {} unless params[:user]
+
     params[:user][:email].try(:strip!)
+    params[:user][:alt_email].try(:strip!)
+
     params[:user].permit(
       :username,
       :email,
@@ -135,8 +152,11 @@ class UsersController < ApplicationController
 
   def avatar_params
     return {} unless params[:avatar]
+
     params[:avatar]
       .permit(:image)
-      .merge(entity: @user)
+      .merge(entity: @user, user_id: @user.id)
   end
+
+  ActiveSupport.run_load_hooks(:fat_free_crm_users_controller, self)
 end

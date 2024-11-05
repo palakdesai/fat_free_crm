@@ -83,7 +83,7 @@ class EntitiesController < ApplicationController
   #----------------------------------------------------------------------------
   def field_group
     if @tag = Tag.find_by_name(params[:tag].strip)
-      if @field_group = FieldGroup.find_by_tag_id_and_klass_name(@tag.id, klass.to_s)
+      if @field_groups = FieldGroup.where(tag_id: @tag.id, klass_name: klass.to_s).order(:label, :created_at)
         @asset = klass.find_by_id(params[:asset_id]) || klass.new
         render('fields/group') && return
       end
@@ -184,7 +184,7 @@ class EntitiesController < ApplicationController
 
   #----------------------------------------------------------------------------
   def update_recently_viewed
-    entity.versions.create(event: :view, whodunnit: PaperTrail.whodunnit)
+    entity.versions.create(event: :view, whodunnit: PaperTrail.request.whodunnit)
   end
 
   # Somewhat simplistic parser that extracts query and hash-prefixed tags from
@@ -194,13 +194,18 @@ class EntitiesController < ApplicationController
   #----------------------------------------------------------------------------
   def parse_query_and_tags(search_string)
     return ['', ''] if search_string.blank?
+
     query = []
     tags = []
-    search_string.strip.split(/\s+/).each do |token|
-      if token.starts_with?("#")
-        tags << token[1..-1]
-      else
-        query << token
+    if search_string.start_with?("#") && search_string.end_with?("#")
+      tags << search_string[1..-2]
+    else
+      search_string.strip.split(/\s+/).each do |token|
+        if token.starts_with?("#")
+          tags << token[1..-1]
+        else
+          query << token
+        end
       end
     end
     [query.join(" "), tags.join(", ")]
@@ -230,4 +235,16 @@ class EntitiesController < ApplicationController
     page = params[:page]&.to_i
     [0, page].max if page
   end
+
+  def guess_related_account(id, url, user)
+    return Account.find(id) unless id.blank?
+
+    if url =~ %r{/accounts/(\d+)\z}
+      Account.find(Regexp.last_match[1]) # related account
+    else
+      Account.new(user: user)
+    end
+  end
+
+  ActiveSupport.run_load_hooks(:fat_free_crm_entities_controller, self)
 end

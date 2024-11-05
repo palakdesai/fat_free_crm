@@ -28,16 +28,14 @@ class Admin::TagsController < Admin::ApplicationController
   # GET /admin/tags/1/edit                                                AJAX
   #----------------------------------------------------------------------------
   def edit
-    if params[:previous].to_s =~ /(\d+)\z/
-      @previous = Tag.find_by_id(Regexp.last_match[1]) || Regexp.last_match[1].to_i
-    end
+    @previous = Tag.find_by_id(detect_previous_id) || detect_previous_id if detect_previous_id
   end
 
   # POST /admin/tags
   # POST /admin/tags.xml                                                  AJAX
   #----------------------------------------------------------------------------
   def create
-    @tag.update_attributes(tag_params)
+    @tag.update(tag_params)
 
     respond_with(@tag)
   end
@@ -46,7 +44,7 @@ class Admin::TagsController < Admin::ApplicationController
   # PUT /admin/tags/1.xml                                                 AJAX
   #----------------------------------------------------------------------------
   def update
-    @tag.update_attributes(tag_params)
+    @tag.update(tag_params)
 
     respond_with(@tag)
   end

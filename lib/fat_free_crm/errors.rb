@@ -21,19 +21,11 @@ module FatFreeCRM
         end
       end
 
-      def each_with_explicit_error
-        keys.each do |attribute|
-          self[attribute].each do |error|
-            if error.start_with?('^')
-              yield :base, error[1..-1]   # Drop the attribute.
-            else
-              yield attribute, error      # This is default Rails3 behavior.
-            end
-          end
-        end
+      def each_with_explicit_error(&block)
+        @errors.each(&block)
       end
     end
   end
 end
 
-ActiveModel::Errors.send(:include, FatFreeCRM::ActiveModel::Errors)
+ActiveModel::Errors.include FatFreeCRM::ActiveModel::Errors

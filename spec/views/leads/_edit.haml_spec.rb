@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 
-describe "/leads/_edit" do
+describe "leads/_edit" do
   include LeadsHelper
 
   before do
@@ -26,7 +26,7 @@ describe "/leads/_edit" do
     expect(view).to render_template(partial: "leads/_web")
     expect(view).to render_template(partial: "entities/_permissions")
 
-    expect(rendered).to have_tag("form[class=edit_lead]") do
+    expect(rendered).to have_tag('form[class="simple_form edit_lead"]') do
       with_tag "input[type=hidden][id=lead_user_id][value='#{@lead.user_id}']"
     end
   end

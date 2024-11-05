@@ -61,24 +61,25 @@ class User < ActiveRecord::Base
   has_many :opportunities
   has_many :assigned_opportunities, class_name: 'Opportunity', foreign_key: 'assigned_to'
   has_many :permissions, dependent: :destroy
-  has_many :preferences, dependent: :destroy
+  has_many :preferences, class_name: 'Preference', dependent: :destroy
   has_many :lists
   has_and_belongs_to_many :groups
 
-  has_paper_trail class_name: 'Version', ignore: [:last_sign_in_at]
+  has_paper_trail versions: { class_name: 'Version' }, ignore: [:last_sign_in_at]
 
   scope :by_id, -> { order('id DESC') }
-  scope :without, ->(user) { where('id != ?', user.id).by_name }
+  # TODO: /home/clockwerx/.rbenv/versions/2.5.3/lib/ruby/gems/2.5.0/gems/activerecord-5.2.3/lib/active_record/scoping/named.rb:175:in `scope': You tried to define a scope named "without" on the model "User", but ActiveRecord::Relation already defined an instance method with the same name. (ArgumentError)
+  scope :without_user, ->(user) { where('id != ?', user.id).by_name }
   scope :by_name, -> { order('first_name, last_name, email') }
 
-  scope :text_search, ->(query) {
+  scope :text_search, lambda { |query|
     query = query.gsub(/[^\w\s\-\.'\p{L}]/u, '').strip
     where('upper(username) LIKE upper(:s) OR upper(email) LIKE upper(:s) OR upper(first_name) LIKE upper(:s) OR upper(last_name) LIKE upper(:s)', s: "%#{query}%")
   }
 
   scope :my, ->(current_user) { accessible_by(current_user.ability) }
 
-  scope :have_assigned_opportunities, -> {
+  scope :have_assigned_opportunities, lambda {
     joins("INNER JOIN opportunities ON users.id = opportunities.assigned_to")
       .where("opportunities.stage <> 'lost' AND opportunities.stage <> 'won'")
       .select('DISTINCT(users.id), users.*')
@@ -92,7 +93,7 @@ class User < ActiveRecord::Base
   validates :username,
             uniqueness: { message: :username_taken, case_sensitive: false },
             presence: { message: :missing_username },
-            format: { with: /[a-z0-9_-]+/i }
+            format: { with: /\A[a-z0-9_-]+\z/i }
   validates :password,
             presence: { if: :password_required? },
             confirmation: true
@@ -131,6 +132,12 @@ class User < ActiveRecord::Base
     else
       super
     end
+  end
+
+  # Send emails to active users only
+  #----------------------------------------------------------------------------
+  def emailable?
+    confirmed? && !awaits_approval? && !suspended? && email.present?
   end
 
   #----------------------------------------------------------------------------
@@ -187,8 +194,6 @@ class User < ActiveRecord::Base
     end
     !sum.nil?
   end
-
-  private
 
   # Define class methods
   #----------------------------------------------------------------------------

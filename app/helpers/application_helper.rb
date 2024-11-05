@@ -27,6 +27,7 @@ module ApplicationHelper
   def show_flash(options = { sticky: false })
     %i[error warning info notice alert].each do |type|
       next unless flash[type]
+
       html = content_tag(:div, h(flash[type]), id: "flash")
       flash[type] = nil
       return html << content_tag(:script, "crm.flash('#{type}', #{options[:sticky]})".html_safe, type: "text/javascript")
@@ -34,20 +35,23 @@ module ApplicationHelper
     content_tag(:p, nil, id: "flash", style: "display:none;")
   end
 
+  def subtitle_link(id, text, hidden)
+    link_to("<small>#{hidden ? '&#9655;' : '&#9661;'}</small> #{sanitize text}".html_safe,
+            url_for(controller: :home, action: :toggle, id: id),
+            remote: true,
+            onclick: "crm.flip_subtitle(this)")
+  end
+
   #----------------------------------------------------------------------------
   def subtitle(id, hidden = true, text = id.to_s.split("_").last.capitalize)
-    content_tag("div",
-                link_to("<small>#{hidden ? '&#9658;' : '&#9660;'}</small> #{sanitize text}".html_safe,
-                        url_for(controller: :home, action: :toggle, id: id),
-                        remote: true,
-                        onclick: "crm.flip_subtitle(this)"), class: "subtitle")
+    content_tag("div", subtitle_link(id, text, hidden), class: "subtitle")
   end
 
   #----------------------------------------------------------------------------
   def section(related, assets)
     asset = assets.to_s.singularize
-    create_id  = "create_#{asset}"
-    select_id  = "select_#{asset}"
+    create_id = "create_#{asset}"
+    select_id = "select_#{asset}"
     create_url = controller.send(:"new_#{asset}_path")
 
     html = tag(:br)
@@ -76,7 +80,7 @@ module ApplicationHelper
   #----------------------------------------------------------------------------
   def rating_select(name, options = {})
     stars = Hash[(1..5).map { |star| [star, "&#9733;" * star] }].sort
-    options_for_select = %(<option value="0"#{options[:selected].to_i == 0 ? ' selected="selected"' : ''}>#{t :select_none}</option>)
+    options_for_select = %(<option value="0"#{options[:selected].to_i.zero? ? ' selected="selected"' : ''}>#{t :select_none}</option>)
     options_for_select += stars.map { |star| %(<option value="#{star.first}"#{options[:selected] == star.first ? ' selected="selected"' : ''}>#{star.last}</option>) }.join
     select_tag name, options_for_select.html_safe, options
   end
@@ -84,7 +88,6 @@ module ApplicationHelper
   #----------------------------------------------------------------------------
   def link_to_inline(id, url, options = {})
     text = options[:text] || t(id, default: id.to_s.titleize)
-    text = (arrow_for(id) + text) unless options[:plain]
     related = (options[:related] ? "&related=#{options[:related]}" : '')
 
     link_to(text,
@@ -96,7 +99,7 @@ module ApplicationHelper
 
   #----------------------------------------------------------------------------
   def arrow_for(id)
-    content_tag(:span, "&#9658;".html_safe, id: "#{id}_arrow", class: :arrow)
+    content_tag(:span, "&#9655;".html_safe, id: "#{id}_arrow", class: :arrow)
   end
 
   #----------------------------------------------------------------------------
@@ -112,14 +115,13 @@ module ApplicationHelper
 
   #----------------------------------------------------------------------------
   def link_to_delete(record, options = {})
-    object = record.is_a?(Array) ? record.last : record
-    confirm = options[:confirm] || nil
+    confirm = options[:confirm] || t(:confirm_delete, record.class.to_s.downcase)
 
     link_to(t(:delete) + "!",
             options[:url] || url_for(record),
             method: :delete,
             remote: true,
-            confirm: confirm)
+            data: { confirm: confirm })
   end
 
   #----------------------------------------------------------------------------
@@ -231,16 +233,15 @@ module ApplicationHelper
 
   # Reresh sidebar using the action view within the current controller.
   #----------------------------------------------------------------------------
-  def refresh_sidebar(action = nil, shake = nil)
-    refresh_sidebar_for(controller.controller_name, action, shake)
+  def refresh_sidebar(action = nil)
+    refresh_sidebar_for(controller.controller_name, action)
   end
 
   # Refresh sidebar using the action view within an arbitrary controller.
   #----------------------------------------------------------------------------
-  def refresh_sidebar_for(view, action = nil, shake = nil)
+  def refresh_sidebar_for(view, action = nil)
     text = ""
     text += "$('#sidebar').html('#{j render(partial: 'layouts/sidebar', locals: { view: view, action: action })}');"
-    text += "$('##{j shake.to_s}').effect('shake', { duration:200, distance: 3 });" if shake
     text.html_safe
   end
 
@@ -254,7 +255,7 @@ module ApplicationHelper
       if site == :skype
         url = "callto:" + url
       else
-        url = "http://" + url unless url.match?(/^https?:\/\//)
+        url = "http://" + url unless url.match?(%r{^https?://})
       end
       link_to(image_tag("#{site}.gif", size: "15x15"), h(url), "data-popup": true, title: t(:open_in_window, h(url)))
     end.compact.join("\n").html_safe
@@ -296,9 +297,24 @@ module ApplicationHelper
   # Ajax helper to pass browser timezone offset to the server.
   #----------------------------------------------------------------------------
   def get_browser_timezone_offset
-    unless session[:timezone_offset]
-      raw "$.get('#{timezone_path}', {offset: (new Date()).getTimezoneOffset()});"
+    raw "$.get('#{timezone_path}', {offset: (new Date()).getTimezoneOffset()});" unless session[:timezone_offset]
+  end
+
+  STYLES = { large: "75x75#", medium: "50x50#", small: "25x25#", thumb: "16x16#" }.freeze
+
+  # Convert STYLE symbols to 'w x h' format for Gravatar and Rails
+  # e.g. size_from_style(:size => :large) -> '75x75'
+  # Allow options to contain :width and :height override keys
+  #----------------------------------------------------------------------------
+  def size_from_style!(options)
+    if options[:width] && options[:height]
+      options[:size] = %i[width height].map { |d| options[d] }.join("x")
+      options.delete(:width)
+      options.delete(:height)
+    elsif STYLES.keys.include?(options[:size])
+      options[:size] = STYLES[options[:size]].sub(/\#\z/, '')
     end
+    options
   end
 
   # Entities can have associated avatars or gravatars. Only calls Gravatar
@@ -307,12 +323,14 @@ module ApplicationHelper
   #----------------------------------------------------------------------------
   def avatar_for(model, args = {})
     args = { class: 'gravatar', size: :large }.merge(args)
+    args = size_from_style!(args)
     if model.respond_to?(:avatar) && model.avatar.present?
-      image_tag(model.avatar.image.url(args.delete(:size)), args)
+      size = args[:size].split('x').map(&:to_i) # convert '75x75' into [75, 75]
+
+      image_tag model.avatar.image.variant(resize_to_limit: size)
     else
-      args = Avatar.size_from_style!(args) # convert size format :large => '75x75'
       gravatar_image_tag(model.email, args)
-    end
+        end
   end
 
   # Returns default permissions intro.
@@ -327,17 +345,12 @@ module ApplicationHelper
 
   # Render a text field that is part of compound address.
   #----------------------------------------------------------------------------
-  def address_field(form, object, attribute, extra_styles)
+  def address_field(form, attribute, extra_styles)
     hint = "#{t(attribute)}..."
-    if object.send(attribute).blank?
-      form.text_field(attribute,
-                      style:   "margin-top: 6px; #{extra_styles}",
-                      placeholder: hint)
-    else
-      form.text_field(attribute,
-                      style:   "margin-top: 6px; #{extra_styles}",
-                      placeholder: hint)
-    end
+
+    form.text_field(attribute,
+                    style:   "margin-top: 6px; #{extra_styles}",
+                    placeholder: hint)
   end
 
   # Return true if:
@@ -389,7 +402,7 @@ module ApplicationHelper
   end
 
   def entity_filter_checkbox(name, value, count)
-    checked = (session["#{controller_name}_filter"].present? ? session["#{controller_name}_filter"].split(",").include?(value.to_s) : count.to_i > 0)
+    checked = (session["#{controller_name}_filter"].present? ? session["#{controller_name}_filter"].split(",").include?(value.to_s) : count.to_i.positive?)
     url = url_for(action: :filter)
     onclick = %{
       var query = $('#query').val(),
@@ -421,7 +434,7 @@ module ApplicationHelper
       fmt_value = if email
                     link_to_email(fmt_value)
                   else
-                    fmt_value.gsub(/((http|ftp|https):\/\/[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:\/\+#]*[\w\-\@?^=%&amp;\/\+#])?)/, "<a href=\"\\1\">\\1</a>")
+                    fmt_value.gsub(%r{((http|ftp|https)://[\w\-_]+(\.[\w\-_]+)+([\w\-\.,@?^=%&amp;:/\+#]*[\w\-\@?^=%&amp;/\+#])?)}, "<a href=\"\\1\">\\1</a>")
       end
       out << content_tag(:td, fmt_value, class: last_class)
     end
@@ -433,10 +446,7 @@ module ApplicationHelper
   def section_title(id, hidden = true, text = nil, info_text = nil)
     text = id.to_s.split("_").last.capitalize if text.nil?
     content_tag("div", class: "subtitle show_attributes") do
-      content = link_to("<small>#{hidden ? '&#9658;' : '&#9660;'}</small> #{sanitize text}".html_safe,
-                        url_for(controller: :home, action: :toggle, id: id),
-                        remote:  true,
-                        onclick: "crm.flip_subtitle(this)")
+      content = subtitle_link(id, text, hidden)
       content << content_tag("small", info_text.to_s, class: "subtitle_inline_info", id: "#{id}_intro", style: hidden ? "" : "display:none;")
     end
   end
@@ -455,6 +465,7 @@ module ApplicationHelper
     views = FatFreeCRM::ViewFactory.views_for(controller: controller.controller_name,
                                               action: show_or_index_action)
     return nil unless views.size > 1
+
     lis = ''.html_safe
     content_tag :ul, class: 'format-buttons' do
       views.collect do |view|
@@ -480,6 +491,7 @@ module ApplicationHelper
   # <span class="timeago" datetime="2008-07-17T09:24:17Z">July 17, 2008</span>
   def timeago(time, options = {})
     return unless time
+
     options[:class] ||= "timeago"
     options[:title] = time.getutc.iso8601
     content_tag(:span, I18n.l(time), options)

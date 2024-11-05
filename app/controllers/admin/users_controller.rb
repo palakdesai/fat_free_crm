@@ -35,9 +35,7 @@ class Admin::UsersController < Admin::ApplicationController
   # GET /admin/users/1/edit                                                AJAX
   #----------------------------------------------------------------------------
   def edit
-    if params[:previous].to_s =~ /(\d+)\z/
-      @previous = User.find_by_id(Regexp.last_match[1]) || Regexp.last_match[1].to_i
-    end
+    @previous = User.find_by_id(detect_previous_id) || detect_previous_id if detect_previous_id
 
     respond_with(@user)
   end
@@ -74,9 +72,7 @@ class Admin::UsersController < Admin::ApplicationController
   # DELETE /admin/users/1.xml                                              AJAX
   #----------------------------------------------------------------------------
   def destroy
-    unless @user.destroyable?(current_user) && @user.destroy
-      flash[:warning] = t(:msg_cant_delete_user, @user.full_name)
-    end
+    flash[:warning] = t(:msg_cant_delete_user, @user.full_name) unless @user.destroyable?(current_user) && @user.destroy
 
     respond_with(@user)
   end
@@ -107,8 +103,10 @@ class Admin::UsersController < Admin::ApplicationController
 
   def user_params
     return {} unless params[:user]
-    params[:user][:email].try(:strip!)
+
     params[:user][:password_confirmation] = nil if params[:user][:password_confirmation].blank?
+    params[:user][:email].try(:strip!)
+    params[:user][:alt_email].try(:strip!)
 
     params[:user].permit(
       :admin,

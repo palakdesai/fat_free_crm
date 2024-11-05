@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 require File.expand_path(File.dirname(__FILE__) + '/../../spec_helper')
 
-describe "/opportunities/_new" do
+describe "opportunities/_new" do
   include OpportunitiesHelper
 
   before do
@@ -25,7 +25,7 @@ describe "/opportunities/_new" do
     expect(view).to render_template(partial: "opportunities/_top_section")
     expect(view).to render_template(partial: "entities/_permissions")
 
-    expect(rendered).to have_tag("form[class=new_opportunity]")
+    expect(rendered).to have_tag('form[class="simple_form new_opportunity"]')
   end
 
   it "should pick default assignee (Myself)" do

@@ -34,7 +34,7 @@ class Field < ActiveRecord::Base
   serialize :collection, Array
   serialize :settings, HashWithIndifferentAccess
 
-  belongs_to :field_group
+  belongs_to :field_group, optional: true
 
   scope :core_fields,   -> { where(type: 'CoreField') }
   scope :custom_fields, -> { where("type != 'CoreField'") }
@@ -92,8 +92,6 @@ class Field < ActiveRecord::Base
 
   def render(value)
     case as
-    when 'checkbox'
-      value.to_s == '0' ? "no" : "yes"
     when 'date'
       value&.strftime(I18n.t("date.formats.mmddyy"))
     when 'datetime'
@@ -104,8 +102,6 @@ class Field < ActiveRecord::Base
       value.to_s
     end
   end
-
-  protected
 
   class << self
     # Provides access to registered field_types

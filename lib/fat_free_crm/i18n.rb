@@ -14,7 +14,7 @@ module FatFreeCRM
       if args.size == 1
         super(args.first, default: args.first.to_s)
       elsif args.second.is_a?(Hash)
-        super(*args)
+        super(args.first, **args.second)
       elsif args.second.is_a?(Integer)
         super(args.first, count: args.second)
       else
@@ -40,5 +40,5 @@ module FatFreeCRM
   end
 end
 
-ActionView::Base.send(:include, FatFreeCRM::I18n)
-ActionController::Base.send(:include, FatFreeCRM::I18n)
+ActionView::Base.include FatFreeCRM::I18n
+ActionController::Base.include FatFreeCRM::I18n

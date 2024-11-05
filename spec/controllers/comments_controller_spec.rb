@@ -25,12 +25,12 @@ describe CommentsController do
         end
 
         it "should redirect to the asset landing page if the asset is found" do
-          get :index, params: { :"#{asset}_id" => @asset.id }
+          get :index, params: { "#{asset}_id": @asset.id }
           expect(response).to redirect_to(controller: asset.to_s.pluralize, action: :show, id: @asset.id)
         end
 
         it "should redirect to root url with warning if the asset is not found" do
-          get :index, params: { :"#{asset}_id" => @asset.id + 42 }
+          get :index, params: { "#{asset}_id": @asset.id + 42 }
           expect(flash[:warning]).not_to eq(nil)
           expect(response).to redirect_to(root_path)
         end
@@ -44,12 +44,12 @@ describe CommentsController do
         end
 
         it "should render all comments as JSON if the asset is found found" do
-          get :index, params: { :"#{asset}_id" => @asset.id }
+          get :index, params: { "#{asset}_id": @asset.id }
           expect(response.body).to eq(assigns[:comments].to_json)
         end
 
         it "JSON: should return 404 (Not Found) JSON error if the asset is not found" do
-          get :index, params: { :"#{asset}_id" => @asset.id + 42 }
+          get :index, params: { "#{asset}_id": @asset.id + 42 }
           expect(flash[:warning]).not_to eq(nil)
           expect(response.code).to eq("404")
         end
@@ -63,12 +63,12 @@ describe CommentsController do
         end
 
         it "should render all comments as XML if the asset is found found" do
-          get :index, params: { :"#{asset}_id" => @asset.id }
+          get :index, params: { "#{asset}_id": @asset.id }
           expect(response.body).to eq(assigns[:comments].to_xml)
         end
 
         it "XML: should return 404 (Not Found) XML error if the asset is not found" do
-          get :index, params: { :"#{asset}_id" => @asset.id + 42 }
+          get :index, params: { "#{asset}_id": @asset.id + 42 }
           expect(flash[:warning]).not_to eq(nil)
           expect(response.code).to eq("404")
         end
@@ -133,18 +133,18 @@ describe CommentsController do
   #   describe "with valid params" do
   #     it "should update the requested comment" do
   #       Comment.should_receive(:find).with("37").and_return(mock_comment)
-  #       mock_comment.should_receive(:update_attributes).with({'these' => 'params'})
+  #       mock_comment.should_receive(:update).with({'these' => 'params'})
   #       put :update, :id => "37", :comment => {:these => 'params'}
   #     end
   #
   #     it "should expose the requested comment as @comment" do
-  #       Comment.stub(:find).and_return(mock_comment(:update_attributes => true))
+  #       Comment.stub(:find).and_return(mock_comment(:update => true))
   #       put :update, :id => "1"
   #       assigns(:comment).should equal(mock_comment)
   #     end
   #
   #     it "should redirect to the comment" do
-  #       Comment.stub(:find).and_return(mock_comment(:update_attributes => true))
+  #       Comment.stub(:find).and_return(mock_comment(:update => true))
   #       put :update, :id => "1"
   #       response.should redirect_to(comment_path(mock_comment))
   #     end
@@ -153,18 +153,18 @@ describe CommentsController do
   #   describe "with invalid params" do
   #     it "should update the requested comment" do
   #       Comment.should_receive(:find).with("37").and_return(mock_comment)
-  #       mock_comment.should_receive(:update_attributes).with({'these' => 'params'})
+  #       mock_comment.should_receive(:update).with({'these' => 'params'})
   #       put :update, :id => "37", :comment => {:these => 'params'}
   #     end
   #
   #     it "should expose the comment as @comment" do
-  #       Comment.stub(:find).and_return(mock_comment(:update_attributes => false))
+  #       Comment.stub(:find).and_return(mock_comment(:update => false))
   #       put :update, :id => "1"
   #       assigns(:comment).should equal(mock_comment)
   #     end
   #
   #     it "should re-render the 'edit' template" do
-  #       Comment.stub(:find).and_return(mock_comment(:update_attributes => false))
+  #       Comment.stub(:find).and_return(mock_comment(:update => false))
   #       put :update, :id => "1"
   #       response.should render_template('edit')
   #     end

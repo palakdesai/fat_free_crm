@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 require 'spec_helper'
 
-describe "/campaigns/_edit" do
+describe "campaigns/_edit" do
   include CampaignsHelper
 
   before do
@@ -23,7 +23,7 @@ describe "/campaigns/_edit" do
     expect(view).to render_template(partial: "campaigns/_objectives")
     expect(view).to render_template(partial: "_permissions")
 
-    expect(view).to have_tag("form[class=edit_campaign]") do
+    expect(view).to have_tag('form[class="simple_form edit_campaign"]') do
       with_tag "input[type=hidden][id=campaign_user_id][value='#{@campaign.user_id}']"
     end
   end

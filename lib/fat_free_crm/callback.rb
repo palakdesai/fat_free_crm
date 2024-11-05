@@ -108,10 +108,9 @@ module FatFreeCRM
     #--------------------------------------------------------------------------
     module Helper
       def hook(method, caller, context = {}, &block)
-        is_view_hook = caller.is_haml?
 
-        # If a block was given, hooks are able to replace, append or prepend view content.
-        if is_view_hook
+        # In a view template context, hooks are able to replace, append or prepend content.
+        if caller.is_a?(ActionView::Base)
           hooks = FatFreeCRM::Callback.view_hook(method, caller, context)
           # Add content to the view in the following order:
           # -- before
@@ -143,5 +142,5 @@ module FatFreeCRM
   end
 end
 
-ActionView::Base.send(:include, FatFreeCRM::Callback::Helper)
-ActionController::Base.send(:include, FatFreeCRM::Callback::Helper)
+ActionView::Base.include FatFreeCRM::Callback::Helper
+ActionController::Base.include FatFreeCRM::Callback::Helper

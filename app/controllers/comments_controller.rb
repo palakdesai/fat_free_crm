@@ -35,9 +35,7 @@ class CommentsController < ApplicationController
 
     model = find_class(@comment.commentable_type)
     id = @comment.commentable_id
-    unless model.my(current_user).find_by_id(id)
-      respond_to_related_not_found(model.downcase)
-    end
+    respond_to_related_not_found(model.downcase) unless model.my(current_user).find_by_id(id)
   end
 
   # POST /comments
@@ -65,7 +63,7 @@ class CommentsController < ApplicationController
   #----------------------------------------------------------------------------
   def update
     @comment = Comment.find(params[:id])
-    @comment.update_attributes(comment_params)
+    @comment.update(comment_params)
     respond_with(@comment)
   end
 
@@ -83,6 +81,7 @@ class CommentsController < ApplicationController
 
   def comment_params
     return {} unless params[:comment]
+
     params.require(:comment).permit(
       :user_id,
       :commentable_type,
@@ -100,4 +99,6 @@ class CommentsController < ApplicationController
   def extract_commentable_name(params)
     params.keys.detect { |x| x =~ /_id$/ }.try(:sub, /_id$/, '')
   end
+
+  ActiveSupport.run_load_hooks(:fat_free_crm_comments_controller, self)
 end

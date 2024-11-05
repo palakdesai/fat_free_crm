@@ -22,10 +22,6 @@ class Admin::FieldGroupsController < Admin::ApplicationController
   def edit
     @field_group = FieldGroup.find(params[:id])
 
-    if params[:previous].to_s =~ /(\d+)\z/
-      @previous = FieldGroup.find_by_id(Regexp.last_match[1]) || Regexp.last_match[1].to_i
-    end
-
     respond_with(@field_group)
   end
 
@@ -43,7 +39,7 @@ class Admin::FieldGroupsController < Admin::ApplicationController
   #----------------------------------------------------------------------------
   def update
     @field_group = FieldGroup.find(params[:id])
-    @field_group.update_attributes(field_group_params)
+    @field_group.update(field_group_params)
 
     respond_with(@field_group)
   end

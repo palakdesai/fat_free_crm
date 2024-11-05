@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 FactoryBot.define do
   factory :user do
-    username            { FactoryBot.generate(:username) }
+    username            { FFaker::InternetSE.user_name_variant_short }
     email               { FFaker::Internet.email }
     first_name          { FFaker::Name.first_name }
     last_name           { FFaker::Name.last_name }
@@ -31,9 +31,13 @@ FactoryBot.define do
     deleted_at          { nil }
     updated_at          { FactoryBot.generate(:time) }
     created_at          { FactoryBot.generate(:time) }
+    confirmed_at        { Time.now.utc }
     suspended_at        { nil }
     password            { "password" }
     password_confirmation { "password" }
+
+    # For unit tests, we dont need to enforce uniqueness
+    to_create { |instance| instance.save(validate: false) }
   end
 
   factory :admin do

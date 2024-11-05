@@ -60,6 +60,16 @@ class ApplicationController < ActionController::Base
     end
   end
 
+  # To deal with pre rails 6 users, reset the session and ask them to relogin
+  rescue_from ArgumentError do |exception|
+    if request.format.html? && exception.message == "invalid base64"
+      request.reset_session
+      redirect_to login_path
+    else
+      raise(exception)
+    end
+  end
+
   private
 
   #
@@ -80,9 +90,10 @@ class ApplicationController < ActionController::Base
   def auto_complete_ids_to_exclude(related)
     return [] if related.blank?
     return [related.to_i].compact unless related.index('/')
+
     related_class, id = related.split('/')
     obj = related_class.classify.constantize.find_by_id(id)
-    if obj && obj.respond_to?(controller_name)
+    if obj&.respond_to?(controller_name)
       obj.send(controller_name).map(&:id)
     else
       []
@@ -257,4 +268,15 @@ class ApplicationController < ActionController::Base
       raise "Unknown resource"
     end
   end
+
+  # In a number of places, we pass ?previous=(id) or ?previous=crm.find_form...
+  # This method centralises all of the places we can pass in a previous param
+  # and extracts an int ID, or nil
+  def detect_previous_id
+    return unless params[:previous]
+    return if params[:previous].start_with?("crm")
+
+    params[:previous].to_i
+  end
+  ActiveSupport.run_load_hooks(:fat_free_crm_application_controller, self)
 end

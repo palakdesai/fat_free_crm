@@ -41,8 +41,10 @@ module OpportunitiesHelper
     selected_campaign = Campaign.find_by_id(options[:selected])
     campaigns = ([selected_campaign] + Campaign.my(current_user).order(:name).limit(25)).compact.uniq
     collection_select :opportunity, :campaign_id, campaigns, :id, :name,
-                      { selected: options[:selected], prompt: t(:select_a_campaign) },
-                      style: 'width:330px;', class: 'select2'
+                      { selected: options[:selected], prompt: t(:select_a_campaign), include_blank: true },
+                      style: 'width:330px;', class: 'select2',
+                      placeholder: t(:select_a_campaign),
+                      "data-url": auto_complete_campaigns_path(format: 'json')
   end
 
   # Generates the inline revenue message for the opportunity list table.
@@ -51,24 +53,16 @@ module OpportunitiesHelper
     msg = []
     won_or_lost = %w[won lost].include?(opportunity.stage)
 
-    if opportunity.weighted_amount != 0
-      msg << content_tag(:b, number_to_currency(opportunity.weighted_amount, precision: 0))
-    end
+    msg << content_tag(:b, number_to_currency(opportunity.weighted_amount, precision: 0)) if opportunity.weighted_amount != 0
 
     unless won_or_lost
       if detailed
-        if opportunity.amount.to_f != 0
-          msg << number_to_currency(opportunity.amount.to_f, precision: 0)
-        end
+        msg << number_to_currency(opportunity.amount.to_f, precision: 0) if opportunity.amount.to_f != 0
 
-        if opportunity.discount.to_f != 0
-          msg << t(:discount) + ' ' + number_to_currency(opportunity.discount, precision: 0)
-        end
+        msg << t(:discount) + ' ' + number_to_currency(opportunity.discount, precision: 0) if opportunity.discount.to_f != 0
       end
 
-      if opportunity.probability.to_i != 0
-        msg << t(:probability) + ' ' + opportunity.probability.to_s + '%'
-      end
+      msg << t(:probability) + ' ' + opportunity.probability.to_s + '%' if opportunity.probability.to_i != 0
     end
 
     msg << opportunity_closes_on_message(opportunity, won_or_lost)

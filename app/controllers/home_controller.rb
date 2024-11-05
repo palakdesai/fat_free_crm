@@ -15,7 +15,9 @@ class HomeController < ApplicationController
     @my_tasks = Task.visible_on_dashboard(current_user).includes(:user, :asset).by_due_at
     @my_opportunities = Opportunity.visible_on_dashboard(current_user).includes(:account, :user, :tags).by_closes_on.by_amount
     @my_accounts = Account.visible_on_dashboard(current_user).includes(:user, :tags).by_name
-    respond_with(@activities)
+    respond_with @activities do |format|
+      format.xls { render xls: @activities, layout: 'header' }
+    end
   end
 
   # GET /home/options                                                      AJAX
@@ -160,9 +162,9 @@ class HomeController < ApplicationController
     duration = current_user.pref[:activity_duration]
     if duration
       words = duration.split("_") # "two_weeks" => 2.weeks
-      if %w[one two].include?(words.first) && %w[hour day days week weeks month].include?(words.last)
-        %w[zero one two].index(words.first).send(words.last)
-      end
+      %w[zero one two].index(words.first).send(words.last) if %w[one two].include?(words.first) && %w[hour day days week weeks month].include?(words.last)
     end
   end
+
+  ActiveSupport.run_load_hooks(:fat_free_crm_home_controller, self)
 end

@@ -131,6 +131,18 @@ describe UsersController do
       end
     end
 
+    describe "with a email with whitespace" do
+      it "should update the user information and render [update] template" do
+        put :update, params: { id: @user.id, user: { first_name: "Billy", last_name: "Bones", alt_email: " john@email.com " } }, xhr: true
+        @user.reload
+        expect(@user.first_name).to eq("Billy")
+        expect(@user.last_name).to eq("Bones")
+        expect(assigns[:user]).to eq(@user)
+        expect(response).to render_template("users/update")
+        expect(@user.alt_email).to eq("john@email.com")
+      end
+    end
+
     describe "with invalid params" do
       it "should not update the user information and redraw [update] template" do
         put :update, params: { id: @user.id, user: { first_name: nil } }, xhr: true
@@ -202,9 +214,6 @@ describe UsersController do
 
       put :upload_avatar, params: { id: @user.id, avatar: { image: @image } }, xhr: true
       expect(@user.avatar).not_to eq(nil)
-      expect(@user.avatar.image_file_size).to eq(@image.size)
-      expect(@user.avatar.image_file_name).to eq(@image.original_filename)
-      expect(@user.avatar.image_content_type).to eq(@image.content_type)
       expect(response).to render_template("users/upload_avatar")
     end
 
@@ -299,7 +308,7 @@ describe UsersController do
     before(:each) do
       login
       @user = current_user
-      @user.update_attributes(first_name: "Apple", last_name: "Boy")
+      @user.update(first_name: "Apple", last_name: "Boy")
     end
 
     it "should assign @users_with_opportunities" do

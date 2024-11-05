@@ -84,9 +84,7 @@ class CampaignsController < EntitiesController
   # GET /campaigns/1/edit                                                  AJAX
   #----------------------------------------------------------------------------
   def edit
-    if params[:previous].to_s =~ /(\d+)\z/
-      @previous = Campaign.my(current_user).find_by_id(Regexp.last_match[1]) || Regexp.last_match[1].to_i
-    end
+    @previous = Campaign.my(current_user).find_by_id(detect_previous_id) || detect_previous_id if detect_previous_id
 
     respond_with(@campaign)
   end
@@ -111,7 +109,7 @@ class CampaignsController < EntitiesController
     respond_with(@campaign) do |_format|
       # Must set access before user_ids, because user_ids= method depends on access value.
       @campaign.access = resource_params[:access] if resource_params[:access]
-      get_data_for_sidebar if @campaign.update_attributes(resource_params) && called_from_index_page?
+      get_data_for_sidebar if @campaign.update(resource_params) && called_from_index_page?
     end
   end
 
@@ -206,4 +204,6 @@ class CampaignsController < EntitiesController
     end
     @campaign_status_total[:other] += @campaign_status_total[:all]
   end
+
+  ActiveSupport.run_load_hooks(:fat_free_crm_campaigns_controller, self)
 end

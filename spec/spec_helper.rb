@@ -8,15 +8,15 @@
 require 'rubygems'
 
 ENV["RAILS_ENV"] = 'test'
-require File.expand_path("../../config/environment", __FILE__)
+require File.expand_path('../config/environment', __dir__)
 require 'rspec/rails'
 require 'capybara/rails'
 require 'paper_trail/frameworks/rspec'
 
-require 'acts_as_fu'
 require 'factory_bot_rails'
 require 'ffaker'
 require 'timecop'
+require 'webdrivers'
 
 # Requires supporting ruby files with custom matchers and macros, etc,
 # in spec/support/ and its subdirectories.
@@ -28,8 +28,6 @@ Dir["./spec/shared/**/*.rb"].sort.each { |f| require f }
 TASK_STATUSES = %w[pending assigned completed].freeze
 
 I18n.locale = 'en-US'
-
-Paperclip.options[:log] = false
 
 RSpec.configure do |config|
   config.infer_spec_type_from_file_location!

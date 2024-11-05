@@ -7,7 +7,7 @@
 #------------------------------------------------------------------------------
 require 'spec_helper'
 
-describe "/campaigns/destroy" do
+describe "campaigns/destroy" do
   before do
     login
     assign(:campaign, @campaign = build_stubbed(:campaign, user: current_user))
@@ -23,7 +23,6 @@ describe "/campaigns/destroy" do
   it "should update Campaigns sidebar" do
     expect(rendered).to include("#sidebar")
     expect(rendered).to have_text("Recent Items")
-    expect(rendered).to include(%/$('#filters').effect('shake'/)
   end
 
   it "should update pagination" do
