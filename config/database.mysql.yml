@@ -12,9 +12,11 @@ development: &development
   encoding: utf8
   database: fat_free_crm_development
   pool: 5
-  username: root
-  password:
-  socket: /var/run/mysqld/mysqld.sock
+  host: db
+  port: 3306
+  reconnect: true
+  variables:
+    sql_mode: ''
 
 # Warning: The database defined as "test" will be erased and
 # re-generated from your development database when you run "rake".

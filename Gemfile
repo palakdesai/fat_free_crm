@@ -9,11 +9,12 @@ case ENV['CI'] && ENV['DB']
 when 'sqlite'
   gem 'sqlite3', '~> 1.6.8'
 when 'mysql'
-  gem 'mysql2'
+  gem 'mysql2', '~> 0.5.6'
 when 'postgres'
   gem 'pg'
 else
-  gem 'pg'
+  # gem 'pg'
+  gem 'mysql2', '~> 0.5.6'
 end
 
 # Removes a gem dependency

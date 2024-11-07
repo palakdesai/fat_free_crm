@@ -1,8 +1,9 @@
 # Usage:
 # docker volume create pgdata
+# docker volume create mydata
 # docker volume create gems
 # docker-compose up
-# docker-compose exec web bundle exec rake db:create db:schema:load ffcrm:demo:load
+# docker-compose exec web bundle exec rake RAILS_ENV=production db:create db:schema:load ffcrm:demo:load
 
 FROM ruby:3.3
 
@@ -18,14 +19,12 @@ ADD . $HOME
 RUN apt-get update && \
 	apt-get install -y imagemagick tzdata && \
 	apt-get autoremove -y && \
-	cp config/database.postgres.docker.yml config/database.yml && \
+	cp config/database.mysql.yml config/database.yml && \
 	gem install bundler && \
-	bundle config set --local deployment 'true' && \
-	bundle install --deployment && \
-	bundle exec rails assets:precompile
+	bundle install && \
+	chmod +x /home/app/startup.sh
 
-CMD ["bundle","exec","rails","s"]
-
+CMD ["/home/app/startup.sh"]
 EXPOSE 3000
 
 # # Usage:
