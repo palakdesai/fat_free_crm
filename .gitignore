@@ -32,3 +32,4 @@ storage/
 .byebug_history
 config/database.mysql_pd.yml
 docker-compose_pd.yml
+database/
