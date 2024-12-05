@@ -6,7 +6,7 @@
 # See MIT-LICENSE file or http://www.opensource.org/licenses/mit-license.php
 #------------------------------------------------------------------------------
 class ApplicationController < ActionController::Base
-  protect_from_forgery with: :exception
+  protect_from_forgery unless: -> { request.format.json? }, with: :exception
 
   before_action :configure_devise_parameters, if: :devise_controller?
   before_action :authenticate_user!
